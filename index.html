@@ -12,7 +12,8 @@
     --border:#1e2d45; --text:#e8eef8; --text-dim:#6b7a99;
     --accent:#00d4ff; --green:#00e676; --red:#ff3d5a;
     --amber:#ffab40; --purple:#b388ff;
-    --r:14px; --rs:10px;
+    --r:14px;
+    --hold-ms:130;
   }
 
   * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
@@ -20,16 +21,13 @@
   body {
     background:#1a1a2e;
     display:flex; align-items:center; justify-content:center;
-    min-height:100vh;
-    font-family:'Inter',sans-serif;
+    min-height:100vh; font-family:'Inter',sans-serif;
   }
 
   .phone-shell {
-    width:393px; height:852px;
-    background:#0a0e1a;
-    border-radius:54px;
-    border:8px solid #2a2a3a;
-    box-shadow:0 0 0 1px #444, 0 30px 80px rgba(0,0,0,0.8), inset 0 0 0 1px #111;
+    width:393px; height:852px; background:#0a0e1a;
+    border-radius:54px; border:8px solid #2a2a3a;
+    box-shadow:0 0 0 1px #444,0 30px 80px rgba(0,0,0,0.8),inset 0 0 0 1px #111;
     position:relative; overflow:hidden;
     display:flex; flex-direction:column;
   }
@@ -64,15 +62,15 @@
   }
   .qtr-pill {
     background:var(--surface2); border:1.5px solid var(--border);
-    border-radius:8px; padding:4px 2px;
-    text-align:center; font-size:10px; font-weight:700;
-    letter-spacing:1px; color:var(--text-dim); text-transform:uppercase;
+    border-radius:8px; padding:4px 2px; text-align:center;
+    font-size:10px; font-weight:700; letter-spacing:1px;
+    color:var(--text-dim); text-transform:uppercase;
   }
   .qtr-pill.active { background:var(--accent); border-color:var(--accent); color:#000; }
   .qtr-pill.done   { border-color:rgba(0,212,255,0.3); color:rgba(0,212,255,0.5); }
   .qtr-sub { font-size:9px; font-weight:700; display:block; margin-top:1px; }
 
-  /* CATEGORY TABS */
+  /* TABS */
   .tab-bar {
     display:grid; grid-template-columns:repeat(4,1fr);
     background:var(--surface); border-bottom:2px solid var(--border);
@@ -86,13 +84,11 @@
   }
   .tab-icon { font-size:16px; line-height:1; }
   .tab-lbl  { font-size:9px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; color:var(--text-dim); transition:color 0.2s; }
-  .tab.active .tab-lbl  { color:var(--accent); }
+  .tab.active .tab-lbl { color:var(--accent); }
   .tab.active { border-bottom-color:var(--accent); }
 
   /* SWIPE VIEWPORT */
-  .swipe-viewport {
-    flex:1; overflow:hidden; position:relative;
-  }
+  .swipe-viewport { flex:1; overflow:hidden; position:relative; }
   .swipe-track {
     display:flex; height:100%;
     transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);
@@ -105,25 +101,38 @@
     display:flex; flex-direction:column; gap:7px;
   }
 
-  /* LAST EVENT TICKER */
+  /* LAST EVENT */
   .last-event {
     text-align:center; font-size:10px; font-weight:700; color:var(--text-dim);
     padding:2px 10px 0; height:16px; flex-shrink:0;
     background:var(--bg);
     display:flex; align-items:center; justify-content:center; gap:5px;
   }
-  .le-dot { width:7px; height:7px; border-radius:50%; background:var(--green); }
+  .le-dot { width:7px; height:7px; border-radius:50%; }
 
   /* EVENT BUTTONS */
   .evt-btn {
     position:relative; border-radius:var(--r); border:1.5px solid;
-    padding:0; height:72px;
-    display:flex; align-items:center;
+    height:72px; display:flex; align-items:center;
     overflow:hidden; cursor:pointer;
     touch-action:none; flex-shrink:0;
-    transition:transform 0.1s;
     user-select:none; -webkit-user-select:none;
   }
+
+  /* Hold-progress ring — drawn as a conic-gradient on a pseudo */
+  .evt-btn::after {
+    content:'';
+    position:absolute;
+    top:6px; right:6px;
+    width:22px; height:22px;
+    border-radius:50%;
+    background:conic-gradient(rgba(255,255,255,0.55) 0% 0%, rgba(255,255,255,0.1) 0% 100%);
+    opacity:0;
+    transition:opacity 0.1s;
+    z-index:5;
+    pointer-events:none;
+  }
+  .evt-btn.holding::after { opacity:1; }
 
   .zone-thirds {
     position:absolute; inset:0; display:flex;
@@ -154,9 +163,8 @@
   }
   .btn-zone-row { display:flex; gap:6px; margin-top:5px; }
   .zone-lbl {
-    font-size:9px; font-weight:900; letter-spacing:1px;
-    text-transform:uppercase; opacity:0.25;
-    transition:opacity 0.08s; padding:2px 5px; border-radius:4px;
+    font-size:9px; font-weight:900; letter-spacing:1px; text-transform:uppercase;
+    opacity:0.25; transition:opacity 0.08s; padding:2px 5px; border-radius:4px;
   }
   .zone-lbl.active { opacity:1; }
 
@@ -183,7 +191,19 @@
   .cat-grey   .btn-count,.cat-grey   .zone-lbl { color:#8a9bb5; }
   .cat-grey   .z3 { background:rgba(138,155,181,0.18); }
 
-  /* BOTTOM TOOLBAR */
+  /* Page dots */
+  .swipe-hint {
+    position:absolute; bottom:10px; left:0; right:0;
+    display:flex; justify-content:center; gap:6px;
+    pointer-events:none; z-index:10;
+  }
+  .hint-dot {
+    width:6px; height:6px; border-radius:50%;
+    background:rgba(255,255,255,0.15); transition:background 0.2s,transform 0.2s;
+  }
+  .hint-dot.active { background:var(--accent); transform:scale(1.3); }
+
+  /* TOOLBAR */
   .toolbar {
     display:grid; grid-template-columns:repeat(5,1fr);
     gap:5px; padding:6px 10px 28px;
@@ -192,10 +212,9 @@
   }
   .tool-btn {
     padding:9px 4px 8px; border-radius:10px; border:1.5px solid;
-    font-size:10px; font-weight:700; letter-spacing:0.5px;
-    text-transform:uppercase; text-align:center; cursor:pointer;
-    display:flex; flex-direction:column; align-items:center; gap:3px;
-    line-height:1; transition:opacity 0.15s;
+    font-size:10px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase;
+    text-align:center; cursor:pointer;
+    display:flex; flex-direction:column; align-items:center; gap:3px; line-height:1;
   }
   .tool-btn:active { opacity:0.65; }
   .tool-icon { font-size:14px; }
@@ -205,18 +224,6 @@
   #t-undo  { background:rgba(255,61,90,0.12);  border-color:rgba(255,61,90,0.4);   color:var(--red); }
   #t-stats { background:rgba(0,212,255,0.12);  border-color:rgba(0,212,255,0.4);   color:var(--accent); }
   #t-csv   { background:rgba(179,136,255,0.12);border-color:rgba(179,136,255,0.4); color:var(--purple); }
-
-  /* SWIPE HINT OVERLAY */
-  .swipe-hint {
-    position:absolute; bottom:12px; left:0; right:0;
-    display:flex; justify-content:center; gap:6px;
-    pointer-events:none; z-index:10;
-  }
-  .hint-dot {
-    width:6px; height:6px; border-radius:50%;
-    background:rgba(255,255,255,0.15); transition:background 0.2s, transform 0.2s;
-  }
-  .hint-dot.active { background:var(--accent); transform:scale(1.3); }
 
   /* TOAST */
   #toast {
@@ -230,27 +237,26 @@
   }
   #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
-  /* INTENT DEBUG BADGE (remove in production) */
-  #intent-badge {
-    position:absolute; top:62px; right:12px;
-    background:rgba(0,0,0,0.7); border:1px solid var(--border);
+  /* STATUS BADGE (debug — remove in production) */
+  #status-badge {
+    position:absolute; top:62px; right:10px;
+    background:rgba(0,0,0,0.75); border:1px solid var(--border);
     border-radius:8px; padding:3px 8px;
     font-size:9px; font-weight:700; letter-spacing:1px;
     color:var(--text-dim); z-index:200; pointer-events:none;
-    opacity:0; transition:opacity 0.2s;
+    opacity:0; transition:opacity 0.15s;
   }
-  #intent-badge.show { opacity:1; }
+  #status-badge.show { opacity:1; }
 </style>
 </head>
 <body>
 
 <div class="phone-shell">
   <div class="dynamic-island"></div>
-  <div id="intent-badge">—</div>
+  <div id="status-badge"></div>
 
   <div class="app">
 
-    <!-- SCOREBOARD -->
     <div class="scoreboard">
       <div class="score-team">
         <div class="score-lbl">Us</div>
@@ -269,7 +275,6 @@
       </div>
     </div>
 
-    <!-- QUARTER PILLS -->
     <div class="qtr-row">
       <div class="qtr-pill active" id="q1">Q1<span class="qtr-sub" id="q1s"></span></div>
       <div class="qtr-pill"        id="q2">Q2<span class="qtr-sub" id="q2s"></span></div>
@@ -277,54 +282,29 @@
       <div class="qtr-pill"        id="q4">Q4<span class="qtr-sub" id="q4s"></span></div>
     </div>
 
-    <!-- CATEGORY TABS -->
     <div class="tab-bar" id="tab-bar">
-      <div class="tab active" data-tab="0" onclick="goToTab(0)">
-        <span class="tab-icon">🟢</span><span class="tab-lbl">Our Shots</span>
-      </div>
-      <div class="tab" data-tab="1" onclick="goToTab(1)">
-        <span class="tab-icon">🔴</span><span class="tab-lbl">Their Shots</span>
-      </div>
-      <div class="tab" data-tab="2" onclick="goToTab(2)">
-        <span class="tab-icon">🟣</span><span class="tab-lbl">Puckouts</span>
-      </div>
-      <div class="tab" data-tab="3" onclick="goToTab(3)">
-        <span class="tab-icon">🔵</span><span class="tab-lbl">Possession</span>
-      </div>
+      <div class="tab active" data-tab="0" onclick="goToTab(0)"><span class="tab-icon">🟢</span><span class="tab-lbl">Our Shots</span></div>
+      <div class="tab"        data-tab="1" onclick="goToTab(1)"><span class="tab-icon">🔴</span><span class="tab-lbl">Their Shots</span></div>
+      <div class="tab"        data-tab="2" onclick="goToTab(2)"><span class="tab-icon">🟣</span><span class="tab-lbl">Puckouts</span></div>
+      <div class="tab"        data-tab="3" onclick="goToTab(3)"><span class="tab-icon">🔵</span><span class="tab-lbl">Possession</span></div>
     </div>
 
-    <!-- LAST EVENT -->
     <div class="last-event" id="last-event">
       <span class="le-dot" id="le-dot" style="display:none"></span>
       <span id="le-text">— no events yet —</span>
     </div>
 
-    <!-- SWIPE VIEWPORT -->
     <div class="swipe-viewport" id="swipe-viewport">
-      <div class="swipe-track" id="swipe-track">
-        <!-- Pages injected by JS -->
-      </div>
-      <!-- Page indicator dots -->
-      <div class="swipe-hint" id="swipe-hint"></div>
+      <div class="swipe-track" id="swipe-track"></div>
+      <div class="swipe-hint"  id="swipe-hint"></div>
     </div>
 
-    <!-- TOOLBAR -->
     <div class="toolbar">
-      <div class="tool-btn" id="t-flow"  onclick="handleFlow()">
-        <span class="tool-icon">▶</span><span class="tool-lbl">Start</span>
-      </div>
-      <div class="tool-btn" id="t-pause" onclick="handlePause()">
-        <span class="tool-icon">⏸</span><span class="tool-lbl">Pause</span>
-      </div>
-      <div class="tool-btn" id="t-undo"  onclick="handleUndo()">
-        <span class="tool-icon">↩</span><span class="tool-lbl">Undo</span>
-      </div>
-      <div class="tool-btn" id="t-stats" onclick="showToast('📊 Stats — not wired in mock-up')">
-        <span class="tool-icon">📊</span><span class="tool-lbl">Stats</span>
-      </div>
-      <div class="tool-btn" id="t-csv"   onclick="showToast('⬇ CSV — not wired in mock-up')">
-        <span class="tool-icon">⬇</span><span class="tool-lbl">CSV</span>
-      </div>
+      <div class="tool-btn" id="t-flow"  onclick="handleFlow()"><span class="tool-icon">▶</span><span class="tool-lbl">Start</span></div>
+      <div class="tool-btn" id="t-pause" onclick="handlePause()"><span class="tool-icon">⏸</span><span class="tool-lbl">Pause</span></div>
+      <div class="tool-btn" id="t-undo"  onclick="handleUndo()"><span class="tool-icon">↩</span><span class="tool-lbl">Undo</span></div>
+      <div class="tool-btn" id="t-stats" onclick="showToast('📊 Stats — not wired in mock-up')"><span class="tool-icon">📊</span><span class="tool-lbl">Stats</span></div>
+      <div class="tool-btn" id="t-csv"   onclick="showToast('⬇ CSV — not wired in mock-up')"><span class="tool-icon">⬇</span><span class="tool-lbl">CSV</span></div>
     </div>
 
   </div>
@@ -332,13 +312,14 @@
 </div>
 
 <script>
-// ── CONFIG ────────────────────────────────────────────────────────────────
-const SWIPE_THRESHOLD   = 38;  // px horizontal to commit to tab swipe
-const ANGLE_LOCK        = 28;  // degrees — below this from horizontal = swipe intent
-const DEAD_ZONE         = 14;  // px — no decision made within this radius
-const ZONE_SPLIT_L      = 0.333;
-const ZONE_SPLIT_R      = 0.667;
+// ── CONSTANTS ─────────────────────────────────────────────────────────────
+const HOLD_MS         = 130;   // ms finger must be down to arm button
+const SWIPE_THRESHOLD = 38;    // px horizontal to commit tab change
+const ANGLE_LOCK      = 30;    // degrees from horizontal → swipe intent
+const DEAD_ZONE       = 12;    // px radius before any intent is decided
+const EXIT_CANCEL_PX  = 18;    // px a finger can stray outside the starting btn before cancelling
 
+// ── DATA ──────────────────────────────────────────────────────────────────
 const TABS_DATA = [
   { label:'Our Shots',   icon:'🟢', btns:[
     { kpi:'Point – Play (Us)',  cat:'cat-green',  name:'Point\nPlay (Us)'  },
@@ -394,17 +375,19 @@ let clockStart = null, clockOffset = 0, clockInterval = null;
 
 TABS_DATA.forEach(t => t.btns.forEach(b => counts[b.kpi] = 0));
 
-// ── BUILD PAGES ───────────────────────────────────────────────────────────
+// ── GESTURE STATE ─────────────────────────────────────────────────────────
+// intent: 'pending' | 'swipe' | 'button' | 'cancelled'
+let g = null;
+
+// ── BUILD UI ──────────────────────────────────────────────────────────────
 function buildPages() {
   const track = document.getElementById('swipe-track');
   const hint  = document.getElementById('swipe-hint');
-  track.innerHTML = '';
-  hint.innerHTML  = '';
+  track.innerHTML = hint.innerHTML = '';
 
   TABS_DATA.forEach((tab, ti) => {
     const page = document.createElement('div');
     page.className = 'swipe-page';
-    page.dataset.pageIdx = ti;
 
     tab.btns.forEach(b => {
       const lines = b.name.split('\n');
@@ -434,10 +417,8 @@ function buildPages() {
 
     track.appendChild(page);
 
-    // Dot indicator
     const dot = document.createElement('div');
     dot.className = 'hint-dot' + (ti === 0 ? ' active' : '');
-    dot.dataset.dotIdx = ti;
     hint.appendChild(dot);
   });
 
@@ -445,16 +426,12 @@ function buildPages() {
   setupGestures();
 }
 
-function setTrackPosition(tabIdx, animate) {
+function setTrackPosition(idx, animate) {
   const track = document.getElementById('swipe-track');
-  track.style.transition = animate
-    ? 'transform 0.28s cubic-bezier(0.4,0,0.2,1)'
-    : 'none';
-  track.style.transform = `translateX(${-tabIdx * 100}%)`;
-  document.querySelectorAll('.hint-dot').forEach((d, i) =>
-    d.classList.toggle('active', i === tabIdx));
-  document.querySelectorAll('.tab').forEach((t, i) =>
-    t.classList.toggle('active', i === tabIdx));
+  track.style.transition = animate ? 'transform 0.28s cubic-bezier(0.4,0,0.2,1)' : 'none';
+  track.style.transform  = `translateX(${-idx * 100}%)`;
+  document.querySelectorAll('.hint-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+  document.querySelectorAll('.tab').forEach((t, i)      => t.classList.toggle('active', i === idx));
 }
 
 function goToTab(idx) {
@@ -463,161 +440,188 @@ function goToTab(idx) {
 }
 
 // ── GESTURE ENGINE ────────────────────────────────────────────────────────
-// Intent states: null | 'pending' | 'swipe' | 'button'
-let gesture = null;
-
 function setupGestures() {
   const vp = document.getElementById('swipe-viewport');
-
-  vp.addEventListener('touchstart', onTouchStart, { passive: false });
-  vp.addEventListener('touchmove',  onTouchMove,  { passive: false });
-  vp.addEventListener('touchend',   onTouchEnd,   { passive: false });
-  vp.addEventListener('touchcancel',onTouchCancel,{ passive: false });
-
-  // Mouse fallback for desktop preview
-  vp.addEventListener('mousedown', onMouseDown);
-  vp.addEventListener('mousemove', onMouseMove);
-  vp.addEventListener('mouseup',   onMouseUp);
-  vp.addEventListener('mouseleave',onMouseCancel);
+  vp.addEventListener('touchstart',  onStart,  { passive: false });
+  vp.addEventListener('touchmove',   onMove,   { passive: false });
+  vp.addEventListener('touchend',    onEnd,    { passive: false });
+  vp.addEventListener('touchcancel', onCancel, { passive: false });
+  vp.addEventListener('mousedown',   onMD);
+  vp.addEventListener('mousemove',   onMM);
+  vp.addEventListener('mouseup',     onMU);
+  vp.addEventListener('mouseleave',  onML);
 }
 
-function startGesture(clientX, clientY, target) {
+function pointerDown(clientX, clientY, target) {
   const btn = target.closest('.evt-btn');
-  gesture = {
-    startX: clientX, startY: clientY,
-    currentX: clientX,
-    btn: btn || null,
-    intent: 'pending',  // pending | swipe | button
-    zone: null,
-    trackBaseX: -curTab * 100,  // percent
+  g = {
+    startX:   clientX,
+    startY:   clientY,
+    clientX:  clientX,
+    clientY:  clientY,
+    btn:      btn || null,
+    startBtn: btn || null,         // the btn the finger landed on
+    btnRect:  btn ? btn.getBoundingClientRect() : null,
+    intent:   'pending',
+    zone:     'Centre',
+    armed:    false,               // true once HOLD_MS has elapsed
+    holdTimer: btn ? setTimeout(() => armButton(), HOLD_MS) : null,
+    trackBase: -curTab * 100,
   };
 }
 
-function moveGesture(clientX, clientY) {
-  if (!gesture) return;
-  const dx = clientX - gesture.startX;
-  const dy = clientY - gesture.startY;
-  const dist = Math.sqrt(dx*dx + dy*dy);
-  gesture.currentX = clientX;
+function armButton() {
+  if (!g || g.intent === 'swipe' || g.intent === 'cancelled') return;
+  g.armed = true;
+  if (g.intent === 'pending') g.intent = 'button';
+  if (g.btn) {
+    g.btn.classList.add('holding');
+    // Light haptic on arm
+    if (navigator.vibrate) navigator.vibrate(10);
+    highlightZone(g.btn, g.zone);
+    badge('ARMED ●');
+  }
+}
 
-  if (gesture.intent === 'pending') {
-    if (dist < DEAD_ZONE) return; // wait
+function pointerMove(clientX, clientY) {
+  if (!g) return;
+  g.clientX = clientX;
+  g.clientY = clientY;
 
-    // Determine intent by angle from horizontal
+  const dx   = clientX - g.startX;
+  const dy   = clientY - g.startY;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+
+  // ── Intent resolution (only while pending) ────────────────────────────
+  if (g.intent === 'pending' && dist > DEAD_ZONE) {
     const angleDeg = Math.abs(Math.atan2(Math.abs(dy), Math.abs(dx)) * 180 / Math.PI);
     if (angleDeg < ANGLE_LOCK) {
-      // Clearly horizontal — swipe intent
-      gesture.intent = 'swipe';
-      // Clear any button highlight
-      if (gesture.btn) clearZones(gesture.btn);
-      showIntentBadge('SWIPE →');
-    } else {
-      // Clearly vertical or diagonal — button intent
-      gesture.intent = 'button';
-      showIntentBadge('BUTTON ●');
+      // Horizontal → swipe
+      clearTimeout(g.holdTimer);
+      if (g.btn) { g.btn.classList.remove('holding'); clearZones(g.btn); }
+      g.intent = 'swipe';
+      badge('SWIPE →');
     }
+    // Vertical/diagonal stays pending until hold timer arms it as button
   }
 
-  if (gesture.intent === 'swipe') {
-    // Live drag the track
-    const vw = document.getElementById('swipe-viewport').offsetWidth;
-    const dragPct = (dx / vw) * 100;
+  // ── Swipe: live drag track ────────────────────────────────────────────
+  if (g.intent === 'swipe') {
+    const vw  = document.getElementById('swipe-viewport').offsetWidth;
+    let pct   = g.trackBase + (dx / vw) * 100;
+    const min = -(TABS_DATA.length - 1) * 100;
+    if (pct > 0)   pct = pct * 0.2;
+    if (pct < min) pct = min + (pct - min) * 0.2;
     const track = document.getElementById('swipe-track');
     track.style.transition = 'none';
-    // Clamp with rubber-band at edges
-    let targetPct = gesture.trackBaseX + dragPct;
-    const minPct  = -(TABS_DATA.length - 1) * 100;
-    if (targetPct > 0)      targetPct = targetPct * 0.25;
-    if (targetPct < minPct) targetPct = minPct + (targetPct - minPct) * 0.25;
-    track.style.transform = `translateX(${targetPct}%)`;
+    track.style.transform  = `translateX(${pct}%)`;
+    return;
   }
 
-  if (gesture.intent === 'button' && gesture.btn) {
-    const zone = getZone(gesture.btn, clientX);
-    gesture.zone = zone;
-    highlightZone(gesture.btn, zone);
+  // ── Button: zone tracking + exit-cancel guard ─────────────────────────
+  if ((g.intent === 'button' || g.intent === 'pending') && g.btn) {
+
+    // Check if finger has left the button's bounding box by more than EXIT_CANCEL_PX
+    if (g.btnRect) {
+      const outside =
+        clientX < g.btnRect.left   - EXIT_CANCEL_PX ||
+        clientX > g.btnRect.right  + EXIT_CANCEL_PX ||
+        clientY < g.btnRect.top    - EXIT_CANCEL_PX ||
+        clientY > g.btnRect.bottom + EXIT_CANCEL_PX;
+
+      if (outside) {
+        // Finger left the button — cancel the event entirely
+        clearTimeout(g.holdTimer);
+        g.btn.classList.remove('holding');
+        clearZones(g.btn);
+        g.intent = 'cancelled';
+        g.armed  = false;
+        badge('CANCELLED ✕');
+        return;
+      }
+    }
+
+    // Update zone highlight (only if armed so there's no premature highlight on a swipe)
+    if (g.armed) {
+      const zone = getZone(g.btn, clientX);
+      g.zone = zone;
+      highlightZone(g.btn, zone);
+    }
   }
 }
 
-function endGesture(clientX) {
-  if (!gesture) return;
-  const dx = clientX - gesture.startX;
+function pointerUp(clientX) {
+  if (!g) return;
 
-  if (gesture.intent === 'swipe') {
-    // Decide which tab to snap to
-    let newTab = curTab;
+  clearTimeout(g.holdTimer);
+
+  if (g.intent === 'swipe') {
+    const dx     = clientX - g.startX;
+    let newTab   = curTab;
     if (dx < -SWIPE_THRESHOLD && curTab < TABS_DATA.length - 1) newTab = curTab + 1;
     if (dx >  SWIPE_THRESHOLD && curTab > 0)                    newTab = curTab - 1;
+    if (newTab !== curTab && navigator.vibrate) navigator.vibrate([8, 30, 8]);
     curTab = newTab;
     setTrackPosition(curTab, true);
-    if (newTab !== (gesture.trackBaseX / -100 | 0)) {
-      if (navigator.vibrate) navigator.vibrate([8, 0, 8]);
-    }
-    showIntentBadge('');
+    badge('');
+    g = null;
+    return;
   }
 
-  if (gesture.intent === 'button' && gesture.btn) {
-    const zone = gesture.zone || getZone(gesture.btn, clientX);
-    clearZones(gesture.btn);
-    fireEvent(gesture.btn, zone);
-    showIntentBadge('');
+  if (g.intent === 'cancelled') {
+    badge('');
+    g = null;
+    return;
   }
 
-  if (gesture.intent === 'pending' && gesture.btn) {
-    // Tap with no movement — fire as centre
-    clearZones(gesture.btn);
-    fireEvent(gesture.btn, 'Centre');
-    showIntentBadge('');
+  // Button or pending: only fire if ARMED (hold timer elapsed) AND finger still on same button
+  if (g.armed && g.btn) {
+    const zone = getZone(g.btn, clientX);
+    g.btn.classList.remove('holding');
+    clearZones(g.btn);
+    fireEvent(g.btn, zone);
+    badge('');
+    g = null;
+    return;
   }
 
-  gesture = null;
+  // Not armed = finger lifted too quickly (swipe speed) → ignore
+  if (g.btn) { g.btn.classList.remove('holding'); clearZones(g.btn); }
+  badge('TOO FAST ✕');
+  g = null;
 }
 
-function cancelGesture() {
-  if (!gesture) return;
-  if (gesture.intent === 'swipe') setTrackPosition(curTab, true);
-  if (gesture.btn) clearZones(gesture.btn);
-  showIntentBadge('');
-  gesture = null;
+function pointerCancel() {
+  if (!g) return;
+  clearTimeout(g.holdTimer);
+  if (g.btn) { g.btn.classList.remove('holding'); clearZones(g.btn); }
+  if (g.intent === 'swipe') setTrackPosition(curTab, true);
+  badge('');
+  g = null;
 }
 
-// Touch handlers
-function onTouchStart(e) {
-  if (e.touches.length > 1) return;
-  e.preventDefault();
-  const t = e.changedTouches[0];
-  startGesture(t.clientX, t.clientY, t.target);
-}
-function onTouchMove(e) {
-  e.preventDefault();
-  const t = e.changedTouches[0];
-  moveGesture(t.clientX, t.clientY);
-}
-function onTouchEnd(e) {
-  e.preventDefault();
-  const t = e.changedTouches[0];
-  endGesture(t.clientX);
-}
-function onTouchCancel() { cancelGesture(); }
+// Touch wrappers
+function onStart(e) { e.preventDefault(); const t = e.changedTouches[0]; pointerDown(t.clientX, t.clientY, t.target); }
+function onMove(e)  { e.preventDefault(); const t = e.changedTouches[0]; pointerMove(t.clientX, t.clientY); }
+function onEnd(e)   { e.preventDefault(); const t = e.changedTouches[0]; pointerUp(t.clientX); }
+function onCancel() { pointerCancel(); }
 
-// Mouse handlers (desktop preview)
-let mouseDown = false;
-function onMouseDown(e) { mouseDown = true; startGesture(e.clientX, e.clientY, e.target); }
-function onMouseMove(e) { if (mouseDown) moveGesture(e.clientX, e.clientY); }
-function onMouseUp(e)   { if (mouseDown) { mouseDown = false; endGesture(e.clientX); } }
-function onMouseCancel(){ if (mouseDown) { mouseDown = false; cancelGesture(); } }
+// Mouse wrappers
+let md = false;
+function onMD(e) { md = true;  pointerDown(e.clientX, e.clientY, e.target); }
+function onMM(e) { if (md) pointerMove(e.clientX, e.clientY); }
+function onMU(e) { if (md) { md = false; pointerUp(e.clientX); } }
+function onML()  { if (md) { md = false; pointerCancel(); } }
 
 // ── ZONE HELPERS ──────────────────────────────────────────────────────────
 function getZone(btn, clientX) {
   const r   = btn.getBoundingClientRect();
   const rel = (clientX - r.left) / r.width;
-  return rel < ZONE_SPLIT_L ? 'Left' : rel < ZONE_SPLIT_R ? 'Centre' : 'Right';
+  return rel < 0.333 ? 'Left' : rel < 0.667 ? 'Centre' : 'Right';
 }
 function highlightZone(btn, zone) {
-  btn.querySelectorAll('.z3').forEach(z =>
-    z.classList.toggle('active', z.dataset.zone === zone));
-  btn.querySelectorAll('.zone-lbl').forEach(l =>
-    l.classList.toggle('active', l.dataset.z === zone));
+  btn.querySelectorAll('.z3').forEach(z     => z.classList.toggle('active', z.dataset.zone === zone));
+  btn.querySelectorAll('.zone-lbl').forEach(l => l.classList.toggle('active', l.dataset.z   === zone));
 }
 function clearZones(btn) {
   btn.querySelectorAll('.z3,.zone-lbl').forEach(el => el.classList.remove('active'));
@@ -625,8 +629,8 @@ function clearZones(btn) {
 
 // ── FIRE EVENT ────────────────────────────────────────────────────────────
 function fireEvent(btn, zone) {
-  if (gameFlow === 'pre') startGame();
-  if (paused)              { showToast('Paused — tap ▶ Resume first'); return; }
+  if (gameFlow === 'pre')       startGame();
+  if (paused)                   { showToast('Paused — tap ▶ Resume first'); return; }
   if (gameFlow === 'half_time') { showToast('Half Time — tap ▶ 2nd Half'); return; }
   if (gameFlow === 'ended')     { showToast('Full Time'); return; }
 
@@ -634,11 +638,10 @@ function fireEvent(btn, zone) {
   counts[kpi]++;
   eventLog.push({ kpi, zone, quarter: getQuarter(), time: document.getElementById('clock').textContent });
 
-  // Animate
   btn.style.transform = 'scale(0.93)';
   setTimeout(() => { btn.style.transform = 'scale(1.03)'; }, 90);
   setTimeout(() => { btn.style.transform = ''; }, 200);
-  if (navigator.vibrate) navigator.vibrate(18);
+  if (navigator.vibrate) navigator.vibrate(22);
 
   const el = document.getElementById('cnt-' + kpi.replace(/\W+/g,'_'));
   if (el) el.textContent = counts[kpi];
@@ -653,16 +656,16 @@ function updateScoreboard() {
   const pU = (counts['Point – Play (Us)']||0) + (counts['Point – Free (Us)']||0);
   const gT = counts['Goal – Them']||0;
   const pT = (counts['Point – Play (Them)']||0) + (counts['Point – Free (Them)']||0);
-  document.getElementById('score-us').textContent      = `${gU}-${pU.toString().padStart(2,'0')}`;
-  document.getElementById('score-us-pts').textContent  = `(${gU*3+pU})`;
-  document.getElementById('score-them').textContent    = `${gT}-${pT.toString().padStart(2,'0')}`;
-  document.getElementById('score-them-pts').textContent= `(${gT*3+pT})`;
+  document.getElementById('score-us').textContent       = `${gU}-${pU.toString().padStart(2,'0')}`;
+  document.getElementById('score-us-pts').textContent   = `(${gU*3+pU})`;
+  document.getElementById('score-them').textContent     = `${gT}-${pT.toString().padStart(2,'0')}`;
+  document.getElementById('score-them-pts').textContent = `(${gT*3+pT})`;
 }
 
 function updateLastEvent(kpi, zone) {
   const colour = KPI_COLOUR[kpi]||'#6b7a99';
   const dot = document.getElementById('le-dot');
-  dot.style.display = 'block';
+  dot.style.display    = 'block';
   dot.style.background = colour;
   const sym = zone === 'Left' ? '◄' : zone === 'Centre' ? '●' : '►';
   document.getElementById('le-text').textContent = `${kpi.replace(' – ',' ')} · ${sym}`;
@@ -678,78 +681,63 @@ function getSeconds() {
   if (!clockStart) return 0;
   return Math.floor((clockOffset + (paused ? 0 : Date.now() - clockStart)) / 1000);
 }
-
 function startGame() {
-  gameFlow = 'first_half';
-  clockStart = Date.now(); clockOffset = 0; paused = false;
+  gameFlow = 'first_half'; clockStart = Date.now(); clockOffset = 0; paused = false;
   setFlowBtn('⏸','Half','rgba(255,171,64,0.12)','rgba(255,171,64,0.5)','var(--amber)');
   clockInterval = setInterval(tickClock, 500);
   showToast('🏁 Kick-off — 1st Half');
 }
-
 function tickClock() {
   if (paused) return;
   const base = gameFlow === 'second_half' ? 30*60 + getSeconds() : getSeconds();
-  const m = Math.floor(base/60).toString().padStart(2,'0');
-  const s = (base%60).toString().padStart(2,'0');
-  document.getElementById('clock').textContent = `${m}:${s}`;
+  document.getElementById('clock').textContent =
+    `${Math.floor(base/60).toString().padStart(2,'0')}:${(base%60).toString().padStart(2,'0')}`;
   const rawS = getSeconds();
   let q;
-  if (gameFlow === 'first_half')  { q = rawS < 15*60 ? 1 : 2; document.getElementById('qtr-label').textContent = `Quarter ${q}`; }
-  else if (gameFlow === 'half_time')  { q = 2; document.getElementById('qtr-label').textContent = 'Half Time'; }
-  else if (gameFlow === 'second_half'){ q = rawS < 15*60 ? 3 : 4; document.getElementById('qtr-label').textContent = `Quarter ${q}`; }
-  else { q = 4; document.getElementById('qtr-label').textContent = 'Full Time'; }
+  if      (gameFlow === 'first_half')   { q = rawS < 15*60 ? 1 : 2; document.getElementById('qtr-label').textContent = `Quarter ${q}`; }
+  else if (gameFlow === 'half_time')    { q = 2; document.getElementById('qtr-label').textContent = 'Half Time'; }
+  else if (gameFlow === 'second_half')  { q = rawS < 15*60 ? 3 : 4; document.getElementById('qtr-label').textContent = `Quarter ${q}`; }
+  else                                  { q = 4; document.getElementById('qtr-label').textContent = 'Full Time'; }
   document.getElementById('match-status').textContent = paused ? 'Paused' : 'Live';
   for (let i = 1; i <= 4; i++) {
     document.getElementById(`q${i}`).classList.toggle('active', i === q);
     document.getElementById(`q${i}`).classList.toggle('done',   i <  q);
   }
 }
-
 function handleFlow() {
   if (gameFlow === 'pre')         { startGame(); return; }
   if (gameFlow === 'first_half')  {
-    clockOffset += Date.now() - clockStart; clockStart = null;
-    gameFlow = 'half_time';
+    clockOffset += Date.now() - clockStart; clockStart = null; gameFlow = 'half_time';
     setFlowBtn('▶','2nd Half','rgba(0,212,255,0.12)','rgba(0,212,255,0.5)','var(--accent)');
-    document.getElementById('qtr-label').textContent  = 'Half Time';
-    document.getElementById('match-status').textContent = 'Half Time';
+    document.getElementById('qtr-label').textContent = document.getElementById('match-status').textContent = 'Half Time';
     showToast('⏸ Half Time'); return;
   }
   if (gameFlow === 'half_time') {
-    gameFlow = 'second_half';
-    clockStart = Date.now(); clockOffset = 0; paused = false;
+    gameFlow = 'second_half'; clockStart = Date.now(); clockOffset = 0; paused = false;
     setFlowBtn('⏹','End','rgba(255,61,90,0.12)','rgba(255,61,90,0.5)','var(--red)');
     showToast('▶ 2nd Half'); return;
   }
   if (gameFlow === 'second_half') {
-    gameFlow = 'ended';
-    clearInterval(clockInterval);
+    gameFlow = 'ended'; clearInterval(clockInterval);
     setFlowBtn('—','FT','rgba(107,122,153,0.08)','rgba(107,122,153,0.3)','var(--text-dim)');
     document.getElementById('match-status').textContent = 'Full Time';
     showToast('⏹ Full Time'); return;
   }
 }
-
 function handlePause() {
-  if (gameFlow !== 'first_half' && gameFlow !== 'second_half') {
-    showToast('Can only pause during active play'); return;
-  }
+  if (gameFlow !== 'first_half' && gameFlow !== 'second_half') { showToast('Can only pause during active play'); return; }
   if (paused) {
     clockStart = Date.now(); paused = false;
-    const pb = document.getElementById('t-pause');
-    pb.innerHTML = '<span class="tool-icon">⏸</span><span class="tool-lbl">Pause</span>';
+    document.getElementById('t-pause').innerHTML = '<span class="tool-icon">⏸</span><span class="tool-lbl">Pause</span>';
     showToast('▶ Resumed');
   } else {
     clockOffset += Date.now() - clockStart; clockStart = null; paused = true;
-    const pb = document.getElementById('t-pause');
-    pb.innerHTML = '<span class="tool-icon">▶</span><span class="tool-lbl">Resume</span>';
+    document.getElementById('t-pause').innerHTML = '<span class="tool-icon">▶</span><span class="tool-lbl">Resume</span>';
     showToast('⏸ Paused');
   }
 }
-
 function handleUndo() {
-  if (eventLog.length === 0) { showToast('Nothing to undo'); return; }
+  if (!eventLog.length) { showToast('Nothing to undo'); return; }
   const last = eventLog.pop();
   counts[last.kpi] = Math.max(0, (counts[last.kpi]||1) - 1);
   const el = document.getElementById('cnt-' + last.kpi.replace(/\W+/g,'_'));
@@ -757,21 +745,20 @@ function handleUndo() {
   updateScoreboard();
   showToast(`↩ Undid: ${last.kpi} [${last.zone}]`);
 }
-
 function setFlowBtn(icon, lbl, bg, bc, c) {
   const b = document.getElementById('t-flow');
   b.innerHTML = `<span class="tool-icon">${icon}</span><span class="tool-lbl">${lbl}</span>`;
   b.style.background = bg; b.style.borderColor = bc; b.style.color = c;
 }
 
-// ── INTENT DEBUG BADGE ────────────────────────────────────────────────────
-let intentTimer;
-function showIntentBadge(msg) {
-  const b = document.getElementById('intent-badge');
+// ── DEBUG BADGE ───────────────────────────────────────────────────────────
+let badgeTimer;
+function badge(msg) {
+  const b = document.getElementById('status-badge');
   if (!msg) { b.classList.remove('show'); return; }
   b.textContent = msg; b.classList.add('show');
-  clearTimeout(intentTimer);
-  intentTimer = setTimeout(() => b.classList.remove('show'), 900);
+  clearTimeout(badgeTimer);
+  badgeTimer = setTimeout(() => b.classList.remove('show'), 900);
 }
 
 // ── TOAST ─────────────────────────────────────────────────────────────────
@@ -783,7 +770,6 @@ function showToast(msg) {
   toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
 }
 
-// ── INIT ──────────────────────────────────────────────────────────────────
 buildPages();
 </script>
 </body>
