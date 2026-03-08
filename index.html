@@ -16,53 +16,32 @@
   }
 
   * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+  html,body { width:100%; height:100%; background:var(--bg); font-family:'Inter',sans-serif; overflow:hidden; }
 
-  html, body {
-    width:100%; height:100%;
-    background:var(--bg);
-    font-family:'Inter',sans-serif;
-    overflow:hidden;
-  }
-
-  /* Full-screen app — no phone shell, no fake notch */
-  .app {
-    display:flex; flex-direction:column;
-    width:100%; height:100%;
-  }
+  .app { display:flex; flex-direction:column; width:100%; height:100%; }
 
   /* ── SCOREBOARD ── */
   .scoreboard {
     background:var(--surface); border-bottom:1px solid var(--border);
-    padding:8px 16px 6px;
+    padding:8px 10px 6px;
     display:flex; align-items:center; justify-content:space-between;
-    flex-shrink:0;
+    flex-shrink:0; gap:6px;
   }
-  .s-team { display:flex; flex-direction:column; align-items:center; }
+  .s-team { display:flex; flex-direction:column; align-items:center; flex:1; }
   .s-lbl  { font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--text-dim); }
-  .s-gaa  { font-family:'Bebas Neue',sans-serif; font-size:28px; line-height:1; color:var(--text); }
-  .s-pts  { font-size:10px; font-weight:700; color:var(--text-dim); }
-  .s-mid  { display:flex; flex-direction:column; align-items:center; gap:1px; }
+  .s-gaa  { font-family:'Bebas Neue',sans-serif; font-size:42px; line-height:1; color:var(--text); letter-spacing:1px; }
+  .s-pts  {
+    font-family:'Bebas Neue',sans-serif; font-size:22px; font-weight:700;
+    color:var(--accent); letter-spacing:1px; margin-top:1px;
+  }
+  .s-mid  { display:flex; flex-direction:column; align-items:center; gap:1px; flex-shrink:0; }
   .s-qtr  { font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--accent); }
-  .s-clk  { font-family:'Bebas Neue',sans-serif; font-size:30px; line-height:1; color:var(--text); }
+  .s-clk  { font-family:'Bebas Neue',sans-serif; font-size:36px; line-height:1; color:var(--text); }
   .s-sta  { font-size:8px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--text-dim); }
 
-  /* ── QUARTER PILLS ── */
-  .qrow {
-    display:grid; grid-template-columns:repeat(4,1fr);
-    gap:4px; padding:4px 10px; background:var(--bg); flex-shrink:0;
-  }
-  .qpill {
-    background:var(--surface2); border:1.5px solid var(--border);
-    border-radius:8px; padding:3px 2px; text-align:center;
-    font-size:10px; font-weight:700; color:var(--text-dim);
-    letter-spacing:1px; text-transform:uppercase;
-  }
-  .qpill.active { background:var(--accent); border-color:var(--accent); color:#000; }
-  .qpill.done   { border-color:rgba(0,212,255,0.3); color:rgba(0,212,255,0.5); }
-
-  /* ── TABS ── */
+  /* ── TABS — weighted visually ── */
   .tabbar {
-    display:grid; grid-template-columns:repeat(4,1fr);
+    display:grid; grid-template-columns:1.15fr 1.15fr 0.85fr 0.85fr;
     background:var(--surface); border-bottom:2px solid var(--border); flex-shrink:0;
   }
   .tab {
@@ -75,14 +54,21 @@
   .tab-lb { font-size:9px; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; color:var(--text-dim); transition:color 0.2s; }
   .tab.active .tab-lb { color:var(--accent); }
   .tab.active { border-bottom-color:var(--accent); }
+  /* Shot tabs slightly bolder when active */
+  .tab.shots.active .tab-lb { color:var(--green); }
+  .tab.shots.active { border-bottom-color:var(--green); }
 
   /* ── LAST EVENT ── */
   .le-bar {
-    height:18px; flex-shrink:0; background:var(--bg);
-    display:flex; align-items:center; justify-content:center; gap:5px;
+    flex-shrink:0; background:var(--surface2);
+    border-bottom:1px solid var(--border);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:5px 14px 4px; gap:2px;
   }
-  .le-dot { width:7px; height:7px; border-radius:50%; display:none; flex-shrink:0; }
-  .le-txt { font-size:10px; font-weight:700; color:var(--text-dim); }
+  .le-row1 { display:flex; align-items:center; gap:8px; }
+  .le-dot  { width:10px; height:10px; border-radius:50%; display:none; flex-shrink:0; }
+  .le-txt  { font-size:15px; font-weight:800; color:var(--text); letter-spacing:0.3px; }
+  .le-prev { font-size:10px; font-weight:600; color:var(--text-dim); opacity:0.6; letter-spacing:0.2px; }
 
   /* ── SWIPE VIEWPORT ── */
   .viewport { flex:1; overflow:hidden; position:relative; min-height:0; }
@@ -99,50 +85,31 @@
 
   /* ── EVENT BUTTON ── */
   .ebtn {
-    position:relative;
-    border-radius:14px; border:1.5px solid;
+    position:relative; border-radius:14px; border:1.5px solid;
     display:flex; align-items:center;
     overflow:hidden; flex-shrink:0;
-    touch-action:none; user-select:none; -webkit-user-select:none;
-    cursor:pointer;
-    /* height set dynamically by JS based on button count */
+    touch-action:none; user-select:none; -webkit-user-select:none; cursor:pointer;
   }
 
-  /* Three zone panels — left/centre/right */
-  .ezones {
-    position:absolute; inset:0;
-    display:flex; pointer-events:none; z-index:1;
-  }
-  .ez {
-    flex:1; opacity:0;
-    transition:opacity 0.12s;
-  }
+  /* zone panels */
+  .ezones { position:absolute; inset:0; display:flex; pointer-events:none; z-index:1; }
+  .ez { flex:1; opacity:0; transition:opacity 0.12s; }
   .ez.zl { border-radius:12px 0 0 12px; }
   .ez.zr { border-radius:0 12px 12px 0; }
   .ez.lit { opacity:1; }
 
-  /* fill sweeps left→right during hold */
+  /* fill sweep */
   .efill {
     position:absolute; inset:0;
     transform:scaleX(0); transform-origin:left center;
-    border-radius:inherit; pointer-events:none; z-index:2;
-    opacity:0; transition:opacity 0.1s;
+    border-radius:inherit; pointer-events:none; z-index:2; opacity:0;
+    transition:opacity 0.1s;
   }
-  .ebtn.pressing .efill {
-    opacity:1;
-    transform:scaleX(1);
-    transition:transform var(--hold) linear, opacity 0.1s;
-  }
-  .ebtn.fired .efill {
-    opacity:0; transform:scaleX(1);
-    transition:opacity 0.3s, transform 0s;
-  }
+  .ebtn.pressing .efill { opacity:1; transform:scaleX(1); transition:transform var(--hold) linear, opacity 0.1s; }
+  .ebtn.fired    .efill { opacity:0; transform:scaleX(1); transition:opacity 0.3s, transform 0s; }
 
-  /* zone label strip at bottom of button */
-  .ezlbls {
-    position:absolute; bottom:4px; left:0; right:0;
-    display:flex; pointer-events:none; z-index:3;
-  }
+  /* zone label strip */
+  .ezlbls { position:absolute; bottom:4px; left:0; right:0; display:flex; pointer-events:none; z-index:3; }
   .ezl {
     flex:1; text-align:center;
     font-size:9px; font-weight:900; letter-spacing:0.5px; text-transform:uppercase;
@@ -150,78 +117,59 @@
   }
   .ezl.lit { opacity:1; }
 
-  /* inner layout */
-  .einner {
-    position:relative; z-index:4;
-    display:flex; align-items:center;
-    width:100%; padding:0 12px; pointer-events:none;
+  /* group divider label */
+  .grp-lbl {
+    font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase;
+    color:var(--text-dim); padding:4px 2px 2px; opacity:0.6; flex-shrink:0;
   }
-  .ecount {
-    font-family:'Bebas Neue',sans-serif; font-size:38px;
-    line-height:1; width:44px; text-align:center; flex-shrink:0;
-    transition:transform 0.18s;
-  }
-  .ediv {
-    width:1px; height:34px; background:rgba(255,255,255,0.08);
-    margin:0 12px; flex-shrink:0;
-  }
-  .einfo { flex:1; }
-  .ename {
-    font-size:14px; font-weight:800; color:var(--text);
-    line-height:1.2; text-transform:uppercase; letter-spacing:0.2px;
-  }
-  .ehint {
-    font-size:9px; font-weight:700; letter-spacing:1px;
-    text-transform:uppercase; margin-top:3px; opacity:0.28;
-  }
+  .grp-lbl:first-child { padding-top:0; }
+
+  /* inner */
+  .einner { position:relative; z-index:4; display:flex; align-items:center; width:100%; padding:0 12px; pointer-events:none; }
+  .ecount { font-family:'Bebas Neue',sans-serif; font-size:38px; line-height:1; width:44px; text-align:center; flex-shrink:0; transition:transform 0.18s; }
+  .ediv   { width:1px; height:34px; background:rgba(255,255,255,0.08); margin:0 12px; flex-shrink:0; }
+  .einfo  { flex:1; }
+  .ename  { font-size:14px; font-weight:800; color:var(--text); line-height:1.2; text-transform:uppercase; letter-spacing:0.2px; }
 
   /* colour themes */
   .cg  { background:linear-gradient(145deg,#0d2010,#0a1a0d); border-color:#1a4020; }
-  .cg  .ecount,.cg  .ehint,.cg  .ezl { color:#00e676; }
-  .cg  .ez   { background:rgba(0,230,118,0.22); }
-  .cg  .efill{ background:rgba(0,230,118,0.18); }
+  .cg  .ecount,.cg  .ezl { color:#00e676; }
+  .cg  .ez    { background:rgba(0,230,118,0.22); }
+  .cg  .efill { background:rgba(0,230,118,0.18); }
 
   .cy  { background:linear-gradient(145deg,#1a1500,#131000); border-color:#3a3000; }
-  .cy  .ecount,.cy  .ehint,.cy  .ezl { color:#ffe082; }
-  .cy  .ez   { background:rgba(255,224,130,0.22); }
-  .cy  .efill{ background:rgba(255,224,130,0.18); }
+  .cy  .ecount,.cy  .ezl { color:#ffe082; }
+  .cy  .ez    { background:rgba(255,224,130,0.22); }
+  .cy  .efill { background:rgba(255,224,130,0.18); }
 
   .cr  { background:linear-gradient(145deg,#200d0d,#1a0a0a); border-color:#401a1a; }
-  .cr  .ecount,.cr  .ehint,.cr  .ezl { color:#ff3d5a; }
-  .cr  .ez   { background:rgba(255,61,90,0.22); }
-  .cr  .efill{ background:rgba(255,61,90,0.18); }
+  .cr  .ecount,.cr  .ezl { color:#ff3d5a; }
+  .cr  .ez    { background:rgba(255,61,90,0.22); }
+  .cr  .efill { background:rgba(255,61,90,0.18); }
 
   .co  { background:linear-gradient(145deg,#1a0f00,#140b00); border-color:#3a2000; }
-  .co  .ecount,.co  .ehint,.co  .ezl { color:#ffab40; }
-  .co  .ez   { background:rgba(255,171,64,0.22); }
-  .co  .efill{ background:rgba(255,171,64,0.18); }
+  .co  .ecount,.co  .ezl { color:#ffab40; }
+  .co  .ez    { background:rgba(255,171,64,0.22); }
+  .co  .efill { background:rgba(255,171,64,0.18); }
 
   .cp  { background:linear-gradient(145deg,#150d20,#100a1a); border-color:#301a40; }
-  .cp  .ecount,.cp  .ehint,.cp  .ezl { color:#b388ff; }
-  .cp  .ez   { background:rgba(179,136,255,0.22); }
-  .cp  .efill{ background:rgba(179,136,255,0.18); }
+  .cp  .ecount,.cp  .ezl { color:#b388ff; }
+  .cp  .ez    { background:rgba(179,136,255,0.22); }
+  .cp  .efill { background:rgba(179,136,255,0.18); }
 
   .cb  { background:linear-gradient(145deg,#0d1520,#0a1018); border-color:#1a2a40; }
-  .cb  .ecount,.cb  .ehint,.cb  .ezl { color:#00d4ff; }
-  .cb  .ez   { background:rgba(0,212,255,0.22); }
-  .cb  .efill{ background:rgba(0,212,255,0.18); }
+  .cb  .ecount,.cb  .ezl { color:#00d4ff; }
+  .cb  .ez    { background:rgba(0,212,255,0.22); }
+  .cb  .efill { background:rgba(0,212,255,0.18); }
 
   .cgr { background:linear-gradient(145deg,#141820,#0f1218); border-color:#252e40; }
-  .cgr .ecount,.cgr .ehint,.cgr .ezl { color:#8a9bb5; }
-  .cgr .ez   { background:rgba(138,155,181,0.22); }
-  .cgr .efill{ background:rgba(138,155,181,0.18); }
+  .cgr .ecount,.cgr .ezl { color:#8a9bb5; }
+  .cgr .ez    { background:rgba(138,155,181,0.22); }
+  .cgr .efill { background:rgba(138,155,181,0.18); }
 
   /* page dots */
-  .dots {
-    position:absolute; bottom:6px; left:0; right:0;
-    display:flex; justify-content:center; gap:6px;
-    pointer-events:none; z-index:10;
-  }
-  .dot {
-    width:6px; height:6px; border-radius:50%;
-    background:rgba(255,255,255,0.15);
-    transition:background 0.2s, transform 0.2s;
-  }
+  .dots { position:absolute; bottom:6px; left:0; right:0; display:flex; justify-content:center; gap:6px; pointer-events:none; z-index:10; }
+  .dot  { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.15); transition:background 0.2s,transform 0.2s; }
   .dot.active { background:var(--accent); transform:scale(1.3); }
 
   /* ── TOOLBAR ── */
@@ -230,11 +178,7 @@
     gap:5px; padding:6px 10px 10px;
     background:var(--surface); border-top:1px solid var(--border); flex-shrink:0;
   }
-  .tbtn {
-    padding:8px 4px 7px; border-radius:10px; border:1.5px solid;
-    text-align:center; cursor:pointer;
-    display:flex; flex-direction:column; align-items:center; gap:2px; line-height:1;
-  }
+  .tbtn { padding:8px 4px 7px; border-radius:10px; border:1.5px solid; text-align:center; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px; line-height:1; }
   .tbtn:active { opacity:0.6; }
   .tic { font-size:14px; }
   .tlb { font-size:8px; font-weight:800; letter-spacing:0.5px; text-transform:uppercase; }
@@ -251,21 +195,20 @@
     background:var(--surface2); border:1px solid var(--border);
     border-radius:20px; padding:6px 18px;
     font-size:12px; font-weight:600; color:var(--text-dim);
-    opacity:0; transition:all 0.22s; white-space:nowrap;
-    z-index:50; pointer-events:none;
+    opacity:0; transition:all 0.22s; white-space:nowrap; z-index:50; pointer-events:none;
   }
   #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
-<div class="app" id="app">
+<div class="app">
 
   <!-- SCOREBOARD -->
   <div class="scoreboard">
     <div class="s-team">
       <div class="s-lbl">Us</div>
       <div class="s-gaa" id="sc-us">0-00</div>
-      <div class="s-pts" id="sc-us-p">(0)</div>
+      <div class="s-pts" id="sc-us-p">0</div>
     </div>
     <div class="s-mid">
       <div class="s-qtr" id="s-qtr">Pre-Match</div>
@@ -275,16 +218,8 @@
     <div class="s-team" style="align-items:flex-end">
       <div class="s-lbl">Them</div>
       <div class="s-gaa" id="sc-th">0-00</div>
-      <div class="s-pts" id="sc-th-p">(0)</div>
+      <div class="s-pts" id="sc-th-p">0</div>
     </div>
-  </div>
-
-  <!-- QUARTER PILLS -->
-  <div class="qrow">
-    <div class="qpill active" id="qp1">Q1</div>
-    <div class="qpill"        id="qp2">Q2</div>
-    <div class="qpill"        id="qp3">Q3</div>
-    <div class="qpill"        id="qp4">Q4</div>
   </div>
 
   <!-- TABS -->
@@ -292,8 +227,11 @@
 
   <!-- LAST EVENT -->
   <div class="le-bar">
-    <span class="le-dot" id="le-dot"></span>
-    <span class="le-txt" id="le-txt">— no events yet —</span>
+    <div class="le-row1">
+      <span class="le-dot" id="le-dot"></span>
+      <span class="le-txt" id="le-txt">— no events yet —</span>
+    </div>
+    <div class="le-prev" id="le-prev"></div>
   </div>
 
   <!-- SWIPE VIEWPORT -->
@@ -316,40 +254,44 @@
 
 <script>
 var TABS = [
-  { lbl:'Our Shots',   ic:'🟢', btns:[
+  { lbl:'Our Shots',   ic:'🟢', cls:'shots', btns:[
     { kpi:'Point Play (Us)',  cls:'cg', name:'Point Play (Us)'  },
     { kpi:'Miss Play (Us)',   cls:'cy', name:'Miss Play (Us)'   },
     { kpi:'Point Free (Us)',  cls:'cg', name:'Point Free (Us)'  },
     { kpi:'Miss Free (Us)',   cls:'cy', name:'Miss Free (Us)'   },
     { kpi:'Goal (Us)',        cls:'cg', name:'Goal (Us)'        },
   ]},
-  { lbl:'Their Shots', ic:'🔴', btns:[
+  { lbl:'Their Shots', ic:'🔴', cls:'shots', btns:[
     { kpi:'Point Play (Them)',  cls:'cr', name:'Point Play (Them)'  },
     { kpi:'Miss Play (Them)',   cls:'co', name:'Miss Play (Them)'   },
     { kpi:'Point Free (Them)',  cls:'cr', name:'Point Free (Them)'  },
     { kpi:'Miss Free (Them)',   cls:'co', name:'Miss Free (Them)'   },
     { kpi:'Goal (Them)',        cls:'cr', name:'Goal (Them)'        },
   ]},
-  { lbl:'Puckouts',    ic:'🟣', btns:[
+  { lbl:'Puckouts', ic:'🟣', cls:'', btns:[
     { kpi:'Our PO Win',    cls:'cp', name:'Our PO Win'    },
     { kpi:'Our PO Lose',   cls:'cr', name:'Our PO Lose'   },
     { kpi:'Their PO Win',  cls:'cp', name:'Their PO Win'  },
     { kpi:'Their PO Lose', cls:'cr', name:'Their PO Lose' },
   ]},
-  { lbl:'Possession',  ic:'🔵', btns:[
-    { kpi:'Contested Win',  cls:'cb',  name:'Contested Win'  },
-    { kpi:'Contested Loss', cls:'cgr', name:'Contested Loss' },
-    { kpi:'T/O Forced',     cls:'cb',  name:'T/O Forced (Us)'},
-    { kpi:'Unforced Loss',  cls:'cgr', name:'Unforced Loss'  },
-    { kpi:'Free Win',       cls:'cp',  name:'Free Win'       },
-    { kpi:'Free Lost',      cls:'cgr', name:'Free Lost'      },
-    { kpi:'Run Thru 65',    cls:'cy',  name:'Run Thru 65'    },
-    { kpi:'Card For Us',    cls:'cr',  name:'Card For Us'    },
+  { lbl:'Possession', ic:'🔵', cls:'', groups:[
+    { label:'Contested Ball', btns:[
+      { kpi:'Contested Win',  cls:'cb',  name:'Contested Win'  },
+      { kpi:'Contested Loss', cls:'cgr', name:'Contested Loss' },
+    ]},
+    { label:'Turnovers', btns:[
+      { kpi:'T/O Forced',    cls:'cb',  name:'T/O Forced (Us)' },
+      { kpi:'Unforced Loss', cls:'cgr', name:'Unforced Loss'   },
+    ]},
+    { label:'Frees', btns:[
+      { kpi:'Free Win',  cls:'cp',  name:'Free Win'  },
+      { kpi:'Free Lost', cls:'cgr', name:'Free Lost' },
+    ]},
   ]},
 ];
 
 var ZONE_LBL = { Left:'◄ L', Centre:'● C', Right:'R ►' };
-var ZONE_SYM = { Left:'◄',   Centre:'●',   Right:'►'   };
+var ZONE_SYM = { Left:'◄', Centre:'●', Right:'►' };
 var KPI_COL  = {
   'Point Play (Us)':'#00e676','Miss Play (Us)':'#ffe082',
   'Point Free (Us)':'#00e676','Miss Free (Us)':'#ffe082','Goal (Us)':'#00e676',
@@ -358,233 +300,209 @@ var KPI_COL  = {
   'Our PO Win':'#b388ff','Our PO Lose':'#ff3d5a',
   'Their PO Win':'#b388ff','Their PO Lose':'#ff3d5a',
   'T/O Forced':'#00d4ff','Contested Win':'#00d4ff','Contested Loss':'#8a9bb5',
-  'Run Thru 65':'#ffe082','Unforced Loss':'#8a9bb5',
-  'Free Win':'#b388ff','Free Lost':'#8a9bb5','Card For Us':'#ff3d5a',
+  'Unforced Loss':'#8a9bb5','Free Win':'#b388ff','Free Lost':'#8a9bb5',
 };
 
-var HOLD_MS  = 350;
-var SWIPE_PX = 32;
-var SWIPE_ANG= 35;
-var DEAD_PX  = 8;
+var HOLD_MS=350, SWIPE_PX=32, SWIPE_ANG=35, DEAD_PX=8;
+var counts={}, eventLog=[], curTab=0;
+var flow='pre', paused=false, clkStart=null, clkOff=0, clkIv=null;
+var g=null;
+var hintShown=false; // track whether to keep showing "Hold to log"
 
-var counts   = {};
-var eventLog = [];
-var curTab   = 0;
-var flow     = 'pre';
-var paused   = false;
-var clkStart = null, clkOff = 0, clkIv = null;
-var g        = null;
-
-TABS.forEach(function(t){ t.btns.forEach(function(b){ counts[b.kpi]=0; }); });
+// flatten btns for count init
+TABS.forEach(function(t){
+  var btns = t.btns || [];
+  if (t.groups) t.groups.forEach(function(gr){ btns = btns.concat(gr.btns); });
+  btns.forEach(function(b){ counts[b.kpi]=0; });
+});
 
 // ── BUILD ─────────────────────────────────────────────────────────────────
 function build() {
-  var tabbar = document.getElementById('tabbar');
-  var track  = document.getElementById('track');
-  var dots   = document.getElementById('dots');
-  tabbar.innerHTML = track.innerHTML = dots.innerHTML = '';
+  var tabbar=document.getElementById('tabbar');
+  var track=document.getElementById('track');
+  var dots=document.getElementById('dots');
+  tabbar.innerHTML=track.innerHTML=dots.innerHTML='';
 
   TABS.forEach(function(tab, ti) {
-    var t = document.createElement('div');
-    t.className = 'tab' + (ti===0?' active':'');
-    t.innerHTML = '<span class="tab-ic">'+tab.ic+'</span><span class="tab-lb">'+tab.lbl+'</span>';
-    (function(i){ t.onclick = function(){ goTab(i); }; })(ti);
+    var t=document.createElement('div');
+    t.className='tab'+(ti===0?' active':'')+' '+(tab.cls||'');
+    t.innerHTML='<span class="tab-ic">'+tab.ic+'</span><span class="tab-lb">'+tab.lbl+'</span>';
+    (function(i){ t.onclick=function(){ goTab(i); }; })(ti);
     tabbar.appendChild(t);
 
-    var page = document.createElement('div');
-    page.className = 'page';
+    var page=document.createElement('div');
+    page.className='page';
 
-    tab.btns.forEach(function(b) {
-      var btn = document.createElement('div');
-      btn.className = 'ebtn '+b.cls;
-      btn.setAttribute('data-kpi', b.kpi);
-      btn.innerHTML =
-        '<div class="ezones">'+
-          '<div class="ez zl" data-z="Left"></div>'+
-          '<div class="ez zm" data-z="Centre"></div>'+
-          '<div class="ez zr" data-z="Right"></div>'+
-        '</div>'+
-        '<div class="efill"></div>'+
-        '<div class="ezlbls">'+
-          '<div class="ezl" data-zl="Left">◄ L</div>'+
-          '<div class="ezl" data-zl="Centre">● C</div>'+
-          '<div class="ezl" data-zl="Right">R ►</div>'+
-        '</div>'+
-        '<div class="einner">'+
-          '<div class="ecount" id="ec-'+b.kpi.replace(/\W+/g,'_')+'">'+counts[b.kpi]+'</div>'+
-          '<div class="ediv"></div>'+
-          '<div class="einfo">'+
-            '<div class="ename">'+b.name+'</div>'+
-            '<div class="ehint">Hold to log</div>'+
-          '</div>'+
-        '</div>';
-      page.appendChild(btn);
-    });
+    if (tab.groups) {
+      // Possession tab — grouped
+      tab.groups.forEach(function(grp) {
+        var lbl=document.createElement('div');
+        lbl.className='grp-lbl';
+        lbl.textContent=grp.label;
+        page.appendChild(lbl);
+        grp.btns.forEach(function(b){ page.appendChild(makeBtn(b)); });
+      });
+    } else {
+      tab.btns.forEach(function(b){ page.appendChild(makeBtn(b)); });
+    }
 
     track.appendChild(page);
 
-    var d = document.createElement('div');
-    d.className = 'dot'+(ti===0?' active':'');
+    var d=document.createElement('div');
+    d.className='dot'+(ti===0?' active':'');
     dots.appendChild(d);
   });
 
-  moveTo(0, false);
+  moveTo(0,false);
   setupGestures();
   sizeButtons();
 }
 
-// Dynamically size buttons to fill available page height
-function sizeButtons() {
-  // Run after layout
-  setTimeout(function() {
-    var vp = document.getElementById('viewport');
-    var vpH = vp.offsetHeight;
-    TABS.forEach(function(tab, ti) {
-      var page = document.getElementById('track').children[ti];
-      if (!page) return;
-      var n    = tab.btns.length;
-      var gap  = 6;
-      var pad  = 16; // top+bottom padding
-      var h    = Math.floor((vpH - pad - (gap*(n-1))) / n);
-      h = Math.max(h, 58); // minimum 58px
-      var btns = page.querySelectorAll('.ebtn');
-      btns.forEach(function(b){ b.style.height = h+'px'; });
-    });
-  }, 50);
+function makeBtn(b) {
+  var btn=document.createElement('div');
+  btn.className='ebtn '+b.cls;
+  btn.setAttribute('data-kpi',b.kpi);
+  btn.innerHTML=
+    '<div class="ezones">'+
+      '<div class="ez zl" data-z="Left"></div>'+
+      '<div class="ez zm" data-z="Centre"></div>'+
+      '<div class="ez zr" data-z="Right"></div>'+
+    '</div>'+
+    '<div class="efill"></div>'+
+    '<div class="ezlbls">'+
+      '<div class="ezl" data-zl="Left">◄ L</div>'+
+      '<div class="ezl" data-zl="Centre">● C</div>'+
+      '<div class="ezl" data-zl="Right">R ►</div>'+
+    '</div>'+
+    '<div class="einner">'+
+      '<div class="ecount" id="ec-'+b.kpi.replace(/\W+/g,'_')+'">'+counts[b.kpi]+'</div>'+
+      '<div class="ediv"></div>'+
+      '<div class="einfo">'+
+        '<div class="ename">'+b.name+'</div>'+
+        '<div class="ehint" id="eh-'+b.kpi.replace(/\W+/g,'_')+'">Hold to log</div>'+
+      '</div>'+
+    '</div>';
+  return btn;
 }
 
-function moveTo(idx, animate) {
-  var track = document.getElementById('track');
-  track.style.transition = animate ? 'transform 0.25s cubic-bezier(0.4,0,0.2,1)' : 'none';
-  track.style.transform  = 'translateX('+(-idx*100)+'%)';
+function sizeButtons() {
+  setTimeout(function() {
+    var vpH=document.getElementById('viewport').offsetHeight;
+    TABS.forEach(function(tab, ti) {
+      var page=document.getElementById('track').children[ti];
+      if (!page) return;
+      var btns=page.querySelectorAll('.ebtn');
+      var grpLbls=page.querySelectorAll('.grp-lbl');
+      var n=btns.length;
+      var grpH=grpLbls.length*20;
+      var gap=6, pad=16;
+      var h=Math.floor((vpH-pad-grpH-(gap*(n-1)))/n);
+      h=Math.max(h,54);
+      btns.forEach(function(b){ b.style.height=h+'px'; });
+    });
+  },50);
+}
+
+function moveTo(idx,animate) {
+  var track=document.getElementById('track');
+  track.style.transition=animate?'transform 0.25s cubic-bezier(0.4,0,0.2,1)':'none';
+  track.style.transform='translateX('+(-idx*100)+'%)';
   document.querySelectorAll('.dot').forEach(function(d,i){ d.classList.toggle('active',i===idx); });
   document.querySelectorAll('.tab').forEach(function(t,i){ t.classList.toggle('active',i===idx); });
 }
 
-function goTab(idx) { curTab=idx; moveTo(idx,true); }
+function goTab(idx){ curTab=idx; moveTo(idx,true); }
 
 // ── ZONE HELPERS ──────────────────────────────────────────────────────────
-function getZone(btn, cx) {
-  var r = btn.getBoundingClientRect();
-  var rel = (cx - r.left) / r.width;
-  return rel < 0.333 ? 'Left' : rel < 0.667 ? 'Centre' : 'Right';
+function getZone(btn,cx) {
+  var r=btn.getBoundingClientRect(), rel=(cx-r.left)/r.width;
+  return rel<0.333?'Left':rel<0.667?'Centre':'Right';
 }
-
-function litZone(btn, zone) {
-  // Light up the zone panel and label
-  btn.querySelectorAll('.ez').forEach(function(el){
-    el.classList.toggle('lit', el.getAttribute('data-z')===zone);
-  });
-  btn.querySelectorAll('.ezl').forEach(function(el){
-    el.classList.toggle('lit', el.getAttribute('data-zl')===zone);
-  });
+function litZone(btn,zone) {
+  btn.querySelectorAll('.ez').forEach(function(el){ el.classList.toggle('lit',el.getAttribute('data-z')===zone); });
+  btn.querySelectorAll('.ezl').forEach(function(el){ el.classList.toggle('lit',el.getAttribute('data-zl')===zone); });
 }
-
 function clearZone(btn) {
   btn.querySelectorAll('.ez,.ezl').forEach(function(el){ el.classList.remove('lit'); });
 }
 
-// ── GESTURE ENGINE ────────────────────────────────────────────────────────
+// ── GESTURES ──────────────────────────────────────────────────────────────
 function setupGestures() {
-  var vp = document.getElementById('viewport');
-  vp.addEventListener('touchstart',  tStart,  {passive:false});
-  vp.addEventListener('touchmove',   tMove,   {passive:false});
-  vp.addEventListener('touchend',    tEnd,    {passive:false});
-  vp.addEventListener('touchcancel', tCancel, {passive:false});
+  var vp=document.getElementById('viewport');
+  vp.addEventListener('touchstart', tStart,  {passive:false});
+  vp.addEventListener('touchmove',  tMove,   {passive:false});
+  vp.addEventListener('touchend',   tEnd,    {passive:false});
+  vp.addEventListener('touchcancel',tCancel, {passive:false});
   var md=false;
   vp.addEventListener('mousedown',  function(e){ md=true;  gDown(e.clientX,e.clientY,e.target); });
   vp.addEventListener('mousemove',  function(e){ if(md) gMove(e.clientX,e.clientY); });
   vp.addEventListener('mouseup',    function(e){ if(md){ md=false; gUp(e.clientX); } });
   vp.addEventListener('mouseleave', function(){  if(md){ md=false; gCancel(); } });
 }
-
 function tStart(e){ e.preventDefault(); var t=e.changedTouches[0]; gDown(t.clientX,t.clientY,t.target); }
 function tMove(e) { e.preventDefault(); var t=e.changedTouches[0]; gMove(t.clientX,t.clientY); }
 function tEnd(e)  { e.preventDefault(); var t=e.changedTouches[0]; gUp(t.clientX); }
 function tCancel(){ gCancel(); }
 
-function gDown(cx, cy, target) {
-  var btn = target.closest ? target.closest('.ebtn') : null;
-  g = { sx:cx, sy:cy, btn:btn, zone:btn?getZone(btn,cx):'Centre',
-        intent:'pending', base:-curTab*100, timer:null };
-
+function gDown(cx,cy,target) {
+  var btn=target.closest?target.closest('.ebtn'):null;
+  g={ sx:cx, sy:cy, btn:btn, zone:btn?getZone(btn,cx):'Centre', intent:'pending', base:-curTab*100, timer:null };
   if (btn) {
-    // Show zone lighting immediately on touch-down
-    litZone(btn, g.zone);
-
-    g.timer = setTimeout(function() {
-      if (!g || g.intent==='swipe' || g.intent==='cancelled') return;
-      g.intent = 'button';
+    litZone(btn,g.zone);
+    g.timer=setTimeout(function() {
+      if (!g||g.intent==='swipe'||g.intent==='cancelled') return;
+      g.intent='button';
       btn.classList.add('pressing');
       if (navigator.vibrate) navigator.vibrate(12);
-    }, HOLD_MS);
+    },HOLD_MS);
   }
 }
-
-function gMove(cx, cy) {
+function gMove(cx,cy) {
   if (!g) return;
-  var dx=cx-g.sx, dy=cy-g.sy;
-  var dist=Math.sqrt(dx*dx+dy*dy);
-
-  if (g.intent==='pending' && dist>DEAD_PX) {
-    var ang = Math.abs(Math.atan2(Math.abs(dy),Math.abs(dx))*180/Math.PI);
-    if (ang < SWIPE_ANG) {
+  var dx=cx-g.sx, dy=cy-g.sy, dist=Math.sqrt(dx*dx+dy*dy);
+  if (g.intent==='pending'&&dist>DEAD_PX) {
+    var ang=Math.abs(Math.atan2(Math.abs(dy),Math.abs(dx))*180/Math.PI);
+    if (ang<SWIPE_ANG) {
       clearTimeout(g.timer);
       if (g.btn){ g.btn.classList.remove('pressing'); clearZone(g.btn); }
-      g.intent = 'swipe';
+      g.intent='swipe';
     }
   }
-
   if (g.intent==='swipe') {
     var vw=document.getElementById('viewport').offsetWidth;
-    var pct=g.base+(dx/vw)*100;
-    var minP=-(TABS.length-1)*100;
+    var pct=g.base+(dx/vw)*100, minP=-(TABS.length-1)*100;
     if (pct>0) pct=pct*0.18;
     if (pct<minP) pct=minP+(pct-minP)*0.18;
-    var track=document.getElementById('track');
-    track.style.transition='none';
-    track.style.transform='translateX('+pct+'%)';
+    var tr=document.getElementById('track');
+    tr.style.transition='none'; tr.style.transform='translateX('+pct+'%)';
     return;
   }
-
-  if (g.btn && (g.intent==='button'||g.intent==='pending')) {
+  if (g.btn&&(g.intent==='button'||g.intent==='pending')) {
     var r=g.btn.getBoundingClientRect();
     if (cx<r.left-20||cx>r.right+20||cy<r.top-20||cy>r.bottom+20) {
-      clearTimeout(g.timer);
-      g.btn.classList.remove('pressing');
-      clearZone(g.btn);
-      g.intent='cancelled';
+      clearTimeout(g.timer); g.btn.classList.remove('pressing'); clearZone(g.btn); g.intent='cancelled';
     }
   }
 }
-
 function gUp(cx) {
   if (!g) return;
   clearTimeout(g.timer);
-
   if (g.intent==='swipe') {
     var dx=cx-g.sx, nt=curTab;
     if (dx<-SWIPE_PX&&curTab<TABS.length-1) nt=curTab+1;
     if (dx> SWIPE_PX&&curTab>0)             nt=curTab-1;
     if (nt!==curTab&&navigator.vibrate) navigator.vibrate([6,20,6]);
-    curTab=nt; moveTo(curTab,true);
-    g=null; return;
+    curTab=nt; moveTo(curTab,true); g=null; return;
   }
-
   if (g.intent==='button'&&g.btn) {
     var btn=g.btn, zone=g.zone;
-    btn.classList.remove('pressing');
-    btn.classList.add('fired');
-    setTimeout(function(){ btn.classList.remove('fired'); clearZone(btn); }, 350);
-    doFire(btn, zone);
-    g=null; return;
+    btn.classList.remove('pressing'); btn.classList.add('fired');
+    setTimeout(function(){ btn.classList.remove('fired'); clearZone(btn); },350);
+    doFire(btn,zone); g=null; return;
   }
-
-  // pending or cancelled
   if (g.btn){ g.btn.classList.remove('pressing'); clearZone(g.btn); }
   g=null;
 }
-
 function gCancel() {
   if (!g) return;
   clearTimeout(g.timer);
@@ -594,7 +512,7 @@ function gCancel() {
 }
 
 // ── FIRE EVENT ────────────────────────────────────────────────────────────
-function doFire(btn, zone) {
+function doFire(btn,zone) {
   if (flow==='pre')       { startGame(); }
   if (paused)             { toast('Paused — tap ▶ Resume first'); return; }
   if (flow==='half_time') { toast('Half Time — tap ▶ 2nd Half'); return; }
@@ -602,21 +520,38 @@ function doFire(btn, zone) {
 
   var kpi=btn.getAttribute('data-kpi');
   counts[kpi]++;
-  eventLog.push({kpi:kpi,zone:zone,quarter:getQ(),time:document.getElementById('s-clk').textContent});
+  var timeStr=document.getElementById('s-clk').textContent;
+  eventLog.push({kpi:kpi,zone:zone,quarter:getQ(),time:timeStr});
 
   if (navigator.vibrate) navigator.vibrate(22);
 
   var el=document.getElementById('ec-'+kpi.replace(/\W+/g,'_'));
   if (el){ el.textContent=counts[kpi]; el.style.transform='scale(1.4)'; setTimeout(function(){ el.style.transform=''; },200); }
 
-  updateScore();
+  // Hide "Hold to log" hint after first successful fire
+  if (!hintShown) {
+    hintShown=true;
+    document.querySelectorAll('.ehint').forEach(function(h){ h.style.display='none'; });
+  }
 
+  updateScore();
+  updateLE(kpi,zone);
+  toast('✓ '+kpi+' · '+ZONE_LBL[zone]);
+}
+
+// ── LAST EVENT ────────────────────────────────────────────────────────────
+function updateLE(kpi,zone) {
   var col=KPI_COL[kpi]||'#6b7a99';
   var dot=document.getElementById('le-dot');
   dot.style.display='inline-block'; dot.style.background=col;
-  document.getElementById('le-txt').textContent=kpi+' · '+ZONE_SYM[zone];
 
-  toast('✓ '+kpi+' · '+ZONE_LBL[zone]);
+  // shift current → prev
+  var cur=document.getElementById('le-txt').textContent;
+  if (cur && cur!=='— no events yet —') {
+    document.getElementById('le-prev').textContent='Before: '+cur;
+  }
+
+  document.getElementById('le-txt').textContent=kpi+' · '+ZONE_SYM[zone];
 }
 
 // ── SCOREBOARD ────────────────────────────────────────────────────────────
@@ -624,30 +559,24 @@ function updateScore() {
   var gU=counts['Goal (Us)']||0, pU=(counts['Point Play (Us)']||0)+(counts['Point Free (Us)']||0);
   var gT=counts['Goal (Them)']||0, pT=(counts['Point Play (Them)']||0)+(counts['Point Free (Them)']||0);
   document.getElementById('sc-us').textContent   = gU+'-'+pad(pU);
-  document.getElementById('sc-us-p').textContent = '('+(gU*3+pU)+')';
+  document.getElementById('sc-us-p').textContent = gU*3+pU;
   document.getElementById('sc-th').textContent   = gT+'-'+pad(pT);
-  document.getElementById('sc-th-p').textContent = '('+(gT*3+pT)+')';
+  document.getElementById('sc-th-p').textContent = gT*3+pT;
 }
 function pad(n){ return n.toString().padStart(2,'0'); }
 
 // ── CLOCK & FLOW ──────────────────────────────────────────────────────────
-function getSecs() {
-  if (!clkStart) return 0;
-  return Math.floor((clkOff+(paused?0:Date.now()-clkStart))/1000);
-}
-function getQ() {
-  var s=getSecs();
-  if (flow==='first_half'||flow==='half_time') return s<900?1:2;
-  return s<900?3:4;
-}
-function startGame() {
+function getSecs(){ if(!clkStart)return 0; return Math.floor((clkOff+(paused?0:Date.now()-clkStart))/1000); }
+function getQ(){ var s=getSecs(); if(flow==='first_half'||flow==='half_time')return s<900?1:2; return s<900?3:4; }
+
+function startGame(){
   flow='first_half'; clkStart=Date.now(); clkOff=0; paused=false;
   setFB('⏸','Half','rgba(255,171,64,0.12)','rgba(255,171,64,0.5)','var(--amber)');
   clkIv=setInterval(tick,500);
   toast('🏁 Kick-off — 1st Half');
 }
-function tick() {
-  if (paused) return;
+function tick(){
+  if(paused)return;
   var base=flow==='second_half'?1800+getSecs():getSecs();
   document.getElementById('s-clk').textContent=fmtT(base);
   var s=getSecs(),q;
@@ -657,50 +586,29 @@ function tick() {
   else                           { q=4; document.getElementById('s-qtr').textContent='Full Time'; }
   document.getElementById('s-sta').textContent=paused?'Paused':'Live';
   for(var i=1;i<=4;i++){
-    document.getElementById('qp'+i).classList.toggle('active',i===q);
-    document.getElementById('qp'+i).classList.toggle('done',  i<q);
+    document.getElementById('qp'+i) && document.getElementById('qp'+i).classList.toggle('active',i===q);
+    document.getElementById('qp'+i) && document.getElementById('qp'+i).classList.toggle('done',  i<q);
   }
 }
 function fmtT(s){ return pad(Math.floor(s/60))+':'+pad(s%60); }
 
-function handleFlow() {
-  if (flow==='pre')        { startGame(); return; }
-  if (flow==='first_half') {
-    clkOff+=Date.now()-clkStart; clkStart=null; flow='half_time';
-    setFB('▶','2nd Half','rgba(0,212,255,0.12)','rgba(0,212,255,0.5)','var(--accent)');
-    document.getElementById('s-qtr').textContent=document.getElementById('s-sta').textContent='Half Time';
-    toast('⏸ Half Time'); return;
-  }
-  if (flow==='half_time') {
-    flow='second_half'; clkStart=Date.now(); clkOff=0; paused=false;
-    setFB('⏹','End','rgba(255,61,90,0.12)','rgba(255,61,90,0.5)','var(--red)');
-    toast('▶ 2nd Half'); return;
-  }
-  if (flow==='second_half') {
-    flow='ended'; clearInterval(clkIv);
-    setFB('—','FT','rgba(107,122,153,0.08)','rgba(107,122,153,0.3)','var(--text-dim)');
-    document.getElementById('s-sta').textContent='Full Time';
-    toast('⏹ Full Time'); return;
-  }
+function handleFlow(){
+  if(flow==='pre')       { startGame(); return; }
+  if(flow==='first_half'){ clkOff+=Date.now()-clkStart; clkStart=null; flow='half_time'; setFB('▶','2nd Half','rgba(0,212,255,0.12)','rgba(0,212,255,0.5)','var(--accent)'); document.getElementById('s-qtr').textContent=document.getElementById('s-sta').textContent='Half Time'; toast('⏸ Half Time'); return; }
+  if(flow==='half_time') { flow='second_half'; clkStart=Date.now(); clkOff=0; paused=false; setFB('⏹','End','rgba(255,61,90,0.12)','rgba(255,61,90,0.5)','var(--red)'); toast('▶ 2nd Half'); return; }
+  if(flow==='second_half'){ flow='ended'; clearInterval(clkIv); setFB('—','FT','rgba(107,122,153,0.08)','rgba(107,122,153,0.3)','var(--text-dim)'); document.getElementById('s-sta').textContent='Full Time'; toast('⏹ Full Time'); return; }
 }
-function handlePause() {
-  if (flow!=='first_half'&&flow!=='second_half'){ toast('Only during active play'); return; }
-  if (paused) {
-    clkStart=Date.now(); paused=false;
-    document.getElementById('tb-pause').innerHTML='<span class="tic">⏸</span><span class="tlb">Pause</span>';
-    toast('▶ Resumed');
-  } else {
-    clkOff+=Date.now()-clkStart; clkStart=null; paused=true;
-    document.getElementById('tb-pause').innerHTML='<span class="tic">▶</span><span class="tlb">Resume</span>';
-    toast('⏸ Paused');
-  }
+function handlePause(){
+  if(flow!=='first_half'&&flow!=='second_half'){ toast('Only during active play'); return; }
+  if(paused){ clkStart=Date.now(); paused=false; document.getElementById('tb-pause').innerHTML='<span class="tic">⏸</span><span class="tlb">Pause</span>'; toast('▶ Resumed'); }
+  else { clkOff+=Date.now()-clkStart; clkStart=null; paused=true; document.getElementById('tb-pause').innerHTML='<span class="tic">▶</span><span class="tlb">Resume</span>'; toast('⏸ Paused'); }
 }
-function handleUndo() {
-  if (!eventLog.length){ toast('Nothing to undo'); return; }
+function handleUndo(){
+  if(!eventLog.length){ toast('Nothing to undo'); return; }
   var last=eventLog.pop();
   counts[last.kpi]=Math.max(0,(counts[last.kpi]||1)-1);
   var el=document.getElementById('ec-'+last.kpi.replace(/\W+/g,'_'));
-  if (el) el.textContent=counts[last.kpi];
+  if(el) el.textContent=counts[last.kpi];
   updateScore();
   toast('↩ Undid: '+last.kpi+' ['+last.zone+']');
 }
@@ -711,15 +619,10 @@ function setFB(ic,lb,bg,bc,c){
 }
 
 var toastTmr;
-function toast(msg){
-  var el=document.getElementById('toast');
-  el.textContent=msg; el.classList.add('show');
-  clearTimeout(toastTmr);
-  toastTmr=setTimeout(function(){ el.classList.remove('show'); },2200);
-}
+function toast(msg){ var el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(toastTmr); toastTmr=setTimeout(function(){ el.classList.remove('show'); },2200); }
 
 build();
-window.addEventListener('resize', sizeButtons);
+window.addEventListener('resize',sizeButtons);
 </script>
 </body>
 </html>
