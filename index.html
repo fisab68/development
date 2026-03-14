@@ -267,8 +267,8 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
 
   <div class="toggle-bar">
     <div class="toggle-btn">
-      <div class="tg on" id="tg1" onclick="goScreen(1)">&#x26BD; Scores &amp; POs</div>
-      <div class="tg"    id="tg2" onclick="goScreen(2)">&#x1F91D; Contests &amp; T/Os</div>
+      <div class="tg on" id="tg1" onclick="goScreen(1)">&#x26BD; Scores</div>
+      <div class="tg"    id="tg2" onclick="goScreen(2)">&#x1F91D; POs, Contests &amp; T/Os</div>
     </div>
   </div>
 
@@ -282,7 +282,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
         <div class="btn cg"  onclick="doTap('Point – Free (Us)','#00e676')"><div class="n" id="ec-pfu">0</div><div class="l">Point free</div></div>
         <div class="btn cam" onclick="doTap('Miss – Free (Us)','#ffe082')"><div class="n" id="ec-mfu">0</div><div class="l">Miss free</div></div>
       </div>
-      <div class="btn cg" onclick="doTap('Goal – Us','#00e676')" style="flex-direction:row;gap:10px;padding:4px 12px;flex-shrink:0;height:44px;border-radius:10px;border:1.5px solid #1a4020;background:linear-gradient(145deg,#0d2010,#0a1a0d);display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;"><div class="n" id="ec-gu" style="color:#00e676;font-family:var(--font-display);font-size:30px;font-weight:900;line-height:1;">0</div><div class="l" style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:#2a6040;">Goal (Us)</div></div>
+      <div class="btn cg" onclick="doTap('Goal – Us','#00e676')" style="flex-direction:row;gap:10px;padding:4px 12px;flex:1;min-height:0;border-radius:10px;border:1.5px solid #1a4020;background:linear-gradient(145deg,#0d2010,#0a1a0d);display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;"><div class="n" id="ec-gu" style="color:#00e676;font-family:var(--font-display);font-size:30px;font-weight:900;line-height:1;">0</div><div class="l" style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:#2a6040;">Goal (Us)</div></div>
       <div class="sec">Their shots</div>
       <div class="grid2" style="flex:2;min-height:0;">
         <div class="btn cr"  onclick="doTap('Point – Play (Them)','#ff3d5a')"><div class="n" id="ec-ppt">0</div><div class="l">Point play</div></div>
@@ -290,7 +290,11 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
         <div class="btn cr"  onclick="doTap('Point – Free (Them)','#ff3d5a')"><div class="n" id="ec-pft">0</div><div class="l">Point free</div></div>
         <div class="btn cam" onclick="doTap('Miss – Free (Them)','#ffe082')"><div class="n" id="ec-mft">0</div><div class="l">Miss free</div></div>
       </div>
-      <div class="btn cr" onclick="doTap('Goal – Them','#ff3d5a')" style="flex-direction:row;gap:10px;padding:4px 12px;flex-shrink:0;height:44px;border-radius:10px;border:1.5px solid #401a1a;background:linear-gradient(145deg,#200d0d,#1a0a0a);display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;"><div class="n" id="ec-gt" style="color:#ff3d5a;font-family:var(--font-display);font-size:30px;font-weight:900;line-height:1;">0</div><div class="l" style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:#7a2030;">Goal (Them)</div></div>
+      <div class="btn cr" onclick="doTap('Goal – Them','#ff3d5a')" style="flex-direction:row;gap:10px;padding:4px 12px;flex:1;min-height:0;border-radius:10px;border:1.5px solid #401a1a;background:linear-gradient(145deg,#200d0d,#1a0a0a);display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;"><div class="n" id="ec-gt" style="color:#ff3d5a;font-family:var(--font-display);font-size:30px;font-weight:900;line-height:1;">0</div><div class="l" style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:#7a2030;">Goal (Them)</div></div>
+    </div>
+
+    <!-- Screen 2 -->
+    <div class="scr" id="scr2">
       <div class="sec">Puck outs</div>
       <div class="grid2" style="flex:1;min-height:0;">
         <div class="btn cpu" onclick="doTap('Our PO – We Win','#b388ff')"><div class="n" id="ec-opw">0</div><div class="l">Our PO win</div></div>
@@ -298,10 +302,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
         <div class="btn cpu" onclick="doTap('Their PO – We Win','#b388ff')"><div class="n" id="ec-tpw">0</div><div class="l">Their PO win</div></div>
         <div class="btn cr"  onclick="doTap('Their PO – We Lose','#ff3d5a')"><div class="n" id="ec-tpl">0</div><div class="l">Their PO lose</div></div>
       </div>
-    </div>
-
-    <!-- Screen 2 -->
-    <div class="scr" id="scr2">
+      <div class="divider"></div>
       <div class="sec">Contested ball — tap zone</div>
       <div class="zone-hdr">
         <div class="zh">Left</div>
