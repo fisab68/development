@@ -1,5 +1,4 @@
-      <div class="grid2" style="flex:3;min-height:0;">
-        <div class="btn cr"  onclick="doTap('Point – Play (Them)','#ff3d5a')"><div class="n" id="ec-ppt">0</div><div class="l">Point play</div></div><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -273,11 +272,11 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
     </div>
   </div>
 
-  <div class="content">
+  <div class="content" style="padding-bottom:env(safe-area-inset-bottom,0px);">
     <!-- Screen 1 -->
     <div class="scr vis" id="scr1">
       <div class="sec">Our shots</div>
-      <div class="grid2" style="flex:3;min-height:0;">
+      <div class="grid2" style="flex:2;min-height:0;">
         <div class="btn cg"  onclick="doTap('Point – Play (Us)','#00e676')"><div class="n" id="ec-ppu">0</div><div class="l">Point play</div></div>
         <div class="btn cam" onclick="doTap('Miss – Play (Us)','#ffe082')"><div class="n" id="ec-mpu">0</div><div class="l">Miss play</div></div>
         <div class="btn cg"  onclick="doTap('Point – Free (Us)','#00e676')"><div class="n" id="ec-pfu">0</div><div class="l">Point free</div></div>
@@ -329,7 +328,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
     </div>
   </div>
 
-  <div class="toolbar">
+  <div class="toolbar" style="padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));">
     <div class="tbtn" id="tb-flow"  onclick="handleFlow()"><span class="tic" id="tb-flow-ic">▶</span><span class="tlb" id="tb-flow-lbl">Start</span></div>
     <div class="tbtn" id="tb-pause" onclick="handlePause()"><span class="tic" id="tb-pause-ic">⏸</span><span class="tlb" id="tb-pause-lbl">Pause</span></div>
     <div class="tbtn" id="tb-undo"  onclick="handleUndo()"><span class="tic">↩</span><span class="tlb">Undo</span></div>
