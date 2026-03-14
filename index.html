@@ -150,7 +150,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
 .dot.active{background:var(--accent);transform:scale(1.3);}
 
 .toolbar{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:6px 10px 12px;background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;}
-.tbtn{padding:8px 4px 7px;border-radius:10px;border:1.5px solid;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;transition:opacity .15s;}
+.tbtn{padding:8px 4px 7px;border-radius:10px;border:1.5px solid;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;transition:opacity .15s;touch-action:manipulation;-webkit-touch-callout:none;}
 .tbtn:active{opacity:.6;}
 .tic{font-size:14px;line-height:1;}
 .tlb{font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;}
@@ -936,6 +936,11 @@ function doFire(btn,zone){
 
 function handleUndo(){
   if(!eventLog.length){ toast('Nothing to undo'); return; }
+  var last=eventLog[eventLog.length-1];
+  showConfirm('Undo Last Event','Undo: '+last.kpi+' ['+last.location+'] @ '+last.time+'?',doUndo,false);
+}
+function doUndo(){
+  if(!eventLog.length) return;
   var last=eventLog.pop();
   lsSet(SK,JSON.stringify(eventLog));
   counts[last.kpi]=Math.max(0,(counts[last.kpi]||1)-1);
@@ -982,7 +987,7 @@ function getQs(q){ return q==='match'?[1,2,3,4]:[parseInt(q)]; }
 function cntQ(kpi,qs){ return eventLog.filter(function(e){ return e.kpi===kpi&&qs.indexOf(e.quarter)>-1; }).length; }
 function renderStats(){
   var qs=getQs(statQ), c=function(k){ return cntQ(k,qs); };
-  if(statTab==='kpi')  renderKpiTab(c);
+  if(statTab==='kpi')  renderKpiTab(c,qs);
   if(statTab==='raw')  renderRawTab(c);
   if(statTab==='ht')   renderHtTab();
 }
@@ -1005,7 +1010,7 @@ function cntQZone(kpi, qs, zoneLbl) {
   }).length;
 }
 
-function renderKpiTab(c){
+function renderKpiTab(c,qs){
   var gU=c('Goal – Us'),ppU=c('Point – Play (Us)'),pfU=c('Point – Free (Us)');
   var pmU=c('Miss – Play (Us)'),fmU=c('Miss – Free (Us)');
   var shotsU=gU+ppU+pfU+pmU+fmU, scoresU=gU+ppU+pfU;
