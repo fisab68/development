@@ -264,22 +264,22 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
     <div class="scr vis" id="scr1">
       <div class="sec">Our shots</div>
       <div class="grid2" style="flex:2;min-height:0;">
-        <div class="btn cg"  onclick="doTap('Point – Play (Us)','#00e676')"><div class="n" id="ec-ppu">0</div><div class="l">Point play</div></div>
-        <div class="btn cam" onclick="doTap('Miss – Play (Us)','#ffe082')"><div class="n" id="ec-mpu">0</div><div class="l">Miss play</div></div>
-        <div class="btn cg"  onclick="doTap('Point – Free (Us)','#00e676')"><div class="n" id="ec-pfu">0</div><div class="l">Point free</div></div>
-        <div class="btn cam" onclick="doTap('Miss – Free (Us)','#ffe082')"><div class="n" id="ec-mfu">0</div><div class="l">Miss free</div></div>
+        <div class="btn cg"  data-kpi="Point – Play (Us)"  data-col="#00e676"><div class="n" id="ec-ppu">0</div><div class="l">Point play</div></div>
+        <div class="btn cam" data-kpi="Miss – Play (Us)"   data-col="#ffe082"><div class="n" id="ec-mpu">0</div><div class="l">Miss play</div></div>
+        <div class="btn cg"  data-kpi="Point – Free (Us)"  data-col="#00e676"><div class="n" id="ec-pfu">0</div><div class="l">Point free</div></div>
+        <div class="btn cam" data-kpi="Miss – Free (Us)"   data-col="#ffe082"><div class="n" id="ec-mfu">0</div><div class="l">Miss free</div></div>
       </div>
-      <div class="goal-btn goal-us" onclick="doTap('Goal – Us','#00e676')">
+      <div class="goal-btn goal-us" data-kpi="Goal – Us" data-col="#00e676">
         <div class="n" id="ec-gu">0</div><div class="l">Goal (Us)</div>
       </div>
       <div class="sec">Their shots</div>
       <div class="grid2" style="flex:2;min-height:0;">
-        <div class="btn cr"  onclick="doTap('Point – Play (Them)','#ff3d5a')"><div class="n" id="ec-ppt">0</div><div class="l">Point play</div></div>
-        <div class="btn cam" onclick="doTap('Miss – Play (Them)','#ffe082')"><div class="n" id="ec-mpt">0</div><div class="l">Miss play</div></div>
-        <div class="btn cr"  onclick="doTap('Point – Free (Them)','#ff3d5a')"><div class="n" id="ec-pft">0</div><div class="l">Point free</div></div>
-        <div class="btn cam" onclick="doTap('Miss – Free (Them)','#ffe082')"><div class="n" id="ec-mft">0</div><div class="l">Miss free</div></div>
+        <div class="btn cr"  data-kpi="Point – Play (Them)" data-col="#ff3d5a"><div class="n" id="ec-ppt">0</div><div class="l">Point play</div></div>
+        <div class="btn cam" data-kpi="Miss – Play (Them)"  data-col="#ffe082"><div class="n" id="ec-mpt">0</div><div class="l">Miss play</div></div>
+        <div class="btn cr"  data-kpi="Point – Free (Them)" data-col="#ff3d5a"><div class="n" id="ec-pft">0</div><div class="l">Point free</div></div>
+        <div class="btn cam" data-kpi="Miss – Free (Them)"  data-col="#ffe082"><div class="n" id="ec-mft">0</div><div class="l">Miss free</div></div>
       </div>
-      <div class="goal-btn goal-them" onclick="doTap('Goal – Them','#ff3d5a')">
+      <div class="goal-btn goal-them" data-kpi="Goal – Them" data-col="#ff3d5a">
         <div class="n" id="ec-gt">0</div><div class="l">Goal (Them)</div>
       </div>
     </div>
@@ -288,32 +288,32 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-fam
     <div class="scr" id="scr2">
       <div class="sec">Puck outs</div>
       <div class="grid2" style="flex:1;min-height:0;">
-        <div class="btn cpu" onclick="doTap('Our PO – We Win','#b388ff')"><div class="n" id="ec-opw">0</div><div class="l">Our PO win</div></div>
-        <div class="btn cr"  onclick="doTap('Our PO – We Lose','#ff3d5a')"><div class="n" id="ec-opl">0</div><div class="l">Our PO lose</div></div>
-        <div class="btn cpu" onclick="doTap('Their PO – We Win','#b388ff')"><div class="n" id="ec-tpw">0</div><div class="l">Their PO win</div></div>
-        <div class="btn cr"  onclick="doTap('Their PO – We Lose','#ff3d5a')"><div class="n" id="ec-tpl">0</div><div class="l">Their PO lose</div></div>
+        <div class="btn cpu" data-kpi="Our PO – We Win"    data-col="#b388ff"><div class="n" id="ec-opw">0</div><div class="l">Our PO win</div></div>
+        <div class="btn cr"  data-kpi="Our PO – We Lose"   data-col="#ff3d5a"><div class="n" id="ec-opl">0</div><div class="l">Our PO lose</div></div>
+        <div class="btn cpu" data-kpi="Their PO – We Win"  data-col="#b388ff"><div class="n" id="ec-tpw">0</div><div class="l">Their PO win</div></div>
+        <div class="btn cr"  data-kpi="Their PO – We Lose" data-col="#ff3d5a"><div class="n" id="ec-tpl">0</div><div class="l">Their PO lose</div></div>
       </div>
       <div class="divider"></div>
-      <div class="sec">Contested ball — tap zone</div>
+      <div class="sec">Contested ball — hold zone</div>
       <div class="zone-hdr">
         <div class="zh">Left</div><div class="zh">Centre</div><div class="zh">Right</div>
       </div>
       <div class="grid3" style="flex:1;min-height:0;">
-        <div class="btn cb" onclick="doTap('Contested Win','#00d4ff','Left')"><div class="n" id="ec-cwl">0</div><div class="l">Win</div></div>
-        <div class="btn cb" onclick="doTap('Contested Win','#00d4ff','Centre')"><div class="n" id="ec-cwc">0</div><div class="l">Win</div></div>
-        <div class="btn cb" onclick="doTap('Contested Win','#00d4ff','Right')"><div class="n" id="ec-cwr">0</div><div class="l">Win</div></div>
+        <div class="btn cb" data-kpi="Contested Win"  data-col="#00d4ff" data-loc="Left"><div class="n" id="ec-cwl">0</div><div class="l">Win</div></div>
+        <div class="btn cb" data-kpi="Contested Win"  data-col="#00d4ff" data-loc="Centre"><div class="n" id="ec-cwc">0</div><div class="l">Win</div></div>
+        <div class="btn cb" data-kpi="Contested Win"  data-col="#00d4ff" data-loc="Right"><div class="n" id="ec-cwr">0</div><div class="l">Win</div></div>
       </div>
       <div style="height:4px;flex-shrink:0;"></div>
       <div class="grid3" style="flex:1;min-height:0;">
-        <div class="btn cr" onclick="doTap('Contested Loss','#ff3d5a','Left')"><div class="n" id="ec-cll">0</div><div class="l">Loss</div></div>
-        <div class="btn cr" onclick="doTap('Contested Loss','#ff3d5a','Centre')"><div class="n" id="ec-clc">0</div><div class="l">Loss</div></div>
-        <div class="btn cr" onclick="doTap('Contested Loss','#ff3d5a','Right')"><div class="n" id="ec-clr">0</div><div class="l">Loss</div></div>
+        <div class="btn cr" data-kpi="Contested Loss" data-col="#ff3d5a" data-loc="Left"><div class="n" id="ec-cll">0</div><div class="l">Loss</div></div>
+        <div class="btn cr" data-kpi="Contested Loss" data-col="#ff3d5a" data-loc="Centre"><div class="n" id="ec-clc">0</div><div class="l">Loss</div></div>
+        <div class="btn cr" data-kpi="Contested Loss" data-col="#ff3d5a" data-loc="Right"><div class="n" id="ec-clr">0</div><div class="l">Loss</div></div>
       </div>
       <div class="divider"></div>
       <div class="sec">Turnovers</div>
       <div class="grid2" style="flex:1;min-height:0;">
-        <div class="btn cb"  onclick="doTap('T/O Forced (Us)','#00d4ff')"><div class="n" id="ec-tof">0</div><div class="l">T/O forced</div></div>
-        <div class="btn cam" onclick="doTap('Unforced Loss','#ffab40')"><div class="n" id="ec-ufl">0</div><div class="l">Unforced loss</div></div>
+        <div class="btn cb"  data-kpi="T/O Forced (Us)" data-col="#00d4ff"><div class="n" id="ec-tof">0</div><div class="l">T/O forced</div></div>
+        <div class="btn cam" data-kpi="Unforced Loss"    data-col="#ffab40"><div class="n" id="ec-ufl">0</div><div class="l">Unforced loss</div></div>
       </div>
     </div>
   </div>
@@ -507,35 +507,87 @@ function goScreen(n){
   document.getElementById('scr2').className='scr'+(n===2?' vis':'');
 }
 
-/* SWIPE — only for screen switching, no hold logic */
+/* HOLD TO LOG + SWIPE TO SWITCH SCREEN */
+var HOLD_MS=250;
 function setupSwipe(){
   var ca=document.getElementById('content-area');
-  ca.addEventListener('touchstart',function(e){
-    var t=e.changedTouches[0];
-    gPtr={sx:t.clientX,sy:t.clientY,intent:'pending'};
-  },{passive:true});
-  ca.addEventListener('touchmove',function(e){
-    if(!gPtr)return;
-    var t=e.changedTouches[0];
-    var dx=t.clientX-gPtr.sx,dy=t.clientY-gPtr.sy;
-    var dist=Math.sqrt(dx*dx+dy*dy);
-    if(gPtr.intent==='pending'&&dist>DEAD_PX){
-      var ang=Math.abs(Math.atan2(Math.abs(dy),Math.abs(dx))*180/Math.PI);
-      gPtr.intent=ang<SWIPE_ANG?'swipe':'tap';
+  ca.addEventListener('touchstart',onTouchStart,{passive:false});
+  ca.addEventListener('touchmove', onTouchMove, {passive:false});
+  ca.addEventListener('touchend',  onTouchEnd,  {passive:false});
+  ca.addEventListener('touchcancel',onTouchCancel,{passive:false});
+}
+
+function onTouchStart(e){
+  var t=e.changedTouches[0];
+  var btn=t.target.closest('.btn,.goal-btn');
+  gPtr={sx:t.clientX,sy:t.clientY,intent:'pending',btn:btn,timer:null,fired:false};
+  if(btn){
+    /* Fill animation starts immediately as visual feedback */
+    btn.style.transition='opacity '+HOLD_MS+'ms linear';
+    btn.style.opacity='0.35';
+    gPtr.timer=setTimeout(function(){
+      if(!gPtr||gPtr.intent==='swipe'||gPtr.intent==='cancelled')return;
+      gPtr.fired=true;
+      /* Flash bright then release */
+      btn.style.transition='opacity 0.08s';
+      btn.style.opacity='1';
+      setTimeout(function(){if(btn){btn.style.transition='';btn.style.opacity='';}},120);
+      if(navigator.vibrate)navigator.vibrate(25);
+      var kpi=btn.getAttribute('data-kpi');
+      var col=btn.getAttribute('data-col');
+      var loc=btn.getAttribute('data-loc')||undefined;
+      doTap(kpi,col,loc);
+    },HOLD_MS);
+  }
+}
+
+function onTouchMove(e){
+  if(!gPtr)return;
+  var t=e.changedTouches[0];
+  var dx=t.clientX-gPtr.sx,dy=t.clientY-gPtr.sy;
+  var dist=Math.sqrt(dx*dx+dy*dy);
+  if(gPtr.intent==='pending'&&dist>DEAD_PX){
+    var ang=Math.abs(Math.atan2(Math.abs(dy),Math.abs(dx))*180/Math.PI);
+    if(ang<SWIPE_ANG){
+      /* It's a swipe — cancel any pending hold */
+      clearTimeout(gPtr.timer);
+      if(gPtr.btn){gPtr.btn.style.transition='';gPtr.btn.style.opacity='';}
+      gPtr.intent='swipe';
+    } else {
+      gPtr.intent='tap';
     }
-    if(gPtr.intent==='swipe') e.preventDefault();
-  },{passive:false});
-  ca.addEventListener('touchend',function(e){
-    if(!gPtr)return;
-    var t=e.changedTouches[0];
-    var dx=t.clientX-gPtr.sx;
-    if(gPtr.intent==='swipe'&&Math.abs(dx)>SWIPE_PX){
-      if(dx<0&&curScreen===1){goScreen(2);if(navigator.vibrate)navigator.vibrate([6,20,6]);}
-      if(dx>0&&curScreen===2){goScreen(1);if(navigator.vibrate)navigator.vibrate([6,20,6]);}
+  }
+  if(gPtr.intent==='swipe') e.preventDefault();
+  /* Cancel hold if finger moves too far off button */
+  if(gPtr.btn&&!gPtr.fired&&(gPtr.intent==='pending'||gPtr.intent==='tap')){
+    var r=gPtr.btn.getBoundingClientRect();
+    if(t.clientX<r.left-20||t.clientX>r.right+20||t.clientY<r.top-20||t.clientY>r.bottom+20){
+      clearTimeout(gPtr.timer);
+      gPtr.btn.style.transition='';gPtr.btn.style.opacity='';
+      gPtr.intent='cancelled';
     }
-    gPtr=null;
-  },{passive:true});
-  ca.addEventListener('touchcancel',function(){gPtr=null;},{passive:true});
+  }
+}
+
+function onTouchEnd(e){
+  if(!gPtr)return;
+  clearTimeout(gPtr.timer);
+  var t=e.changedTouches[0];
+  var dx=t.clientX-gPtr.sx;
+  if(gPtr.intent==='swipe'&&Math.abs(dx)>SWIPE_PX){
+    if(dx<0&&curScreen===1){goScreen(2);if(navigator.vibrate)navigator.vibrate([6,20,6]);}
+    if(dx>0&&curScreen===2){goScreen(1);if(navigator.vibrate)navigator.vibrate([6,20,6]);}
+  }
+  /* Restore button if hold didn't complete */
+  if(gPtr.btn&&!gPtr.fired){gPtr.btn.style.transition='';gPtr.btn.style.opacity='';}
+  gPtr=null;
+}
+
+function onTouchCancel(){
+  if(!gPtr)return;
+  clearTimeout(gPtr.timer);
+  if(gPtr.btn&&!gPtr.fired){gPtr.btn.style.transition='';gPtr.btn.style.opacity='';}
+  gPtr=null;
 }
 
 function showDirModal(){
