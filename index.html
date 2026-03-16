@@ -874,7 +874,7 @@ function renderKpiTab(c,qs){
   var tpW=c('Their PO – We Win'),tpL=c('Their PO – We Lose');
   var opPct=opW+opL?Math.round(opW/(opW+opL)*100):null;
   var tpPct=tpW+tpL?Math.round(tpW/(tpW+tpL)*100):null;
-  var cbW=c('Contested Win'),cbL=c('Contested Loss');
+  var cbW=c('Contested Win')+c('T/O Forced (Us)'),cbL=c('Contested Loss');
   var cbPct=cbW+cbL?Math.round(cbW/(cbW+cbL)*100):null;
   var html='';
   html+='<div class="sec-lbl">Shooting</div><div class="paired-block">';
@@ -888,7 +888,7 @@ function renderKpiTab(c,qs){
   html+=mRow(opPct!==null?esc(opPct)+'%':'—',esc(opW)+'W · '+esc(opL)+'L',70,true,'Win %',tpPct!==null?esc(tpPct)+'%':'—',esc(tpW)+'W · '+esc(tpL)+'L',50,true);
   html+='</div>';
   html+='<div class="sec-lbl">Possession</div><div class="solo-grid">';
-  html+=soloCard('c-blue','Contested Ball',cbPct!==null?esc(cbPct)+'%':'—',esc(cbW)+'W · '+esc(cbL)+'L',50,true);
+  html+=soloCard('c-blue','Contested Ball',cbPct!==null?esc(cbPct)+'%':'—',esc(cbW)+'W (inc T/O) · '+esc(cbL)+'L',50,true);
   html+=soloCard('c-amber','T/O Forced',esc(c('T/O Forced (Us)')),'forced on them',null,null);
   html+=soloCard('c-grey','Unforced Loss',esc(c('Unforced Loss')),'possession lost',null,null);
   html+='</div>';
