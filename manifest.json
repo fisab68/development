@@ -1,0 +1,14 @@
+{
+  "name": "Camino Francés Companion",
+  "short_name": "Camino",
+  "description": "6-day trail guide for the Camino Francés — Calzadilla de la Cueza to Astorga",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0f6e56",
+  "background_color": "#f7f6f2",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
