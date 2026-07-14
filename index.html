@@ -1,536 +1,404 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; connect-src https://api.anthropic.com; img-src 'self' data:; font-src 'self'; frame-ancestors 'none'; form-action 'none';">
-<meta http-equiv="X-Content-Type-Options" content="nosniff">
-<meta http-equiv="X-Frame-Options" content="DENY">
-<meta http-equiv="Referrer-Policy" content="no-referrer">
-<meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=(), payment=(), usb=(), bluetooth=()">
-<link rel="manifest" href="manifest.json">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#0B100D">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Camino">
-<link rel="apple-touch-icon" href="icon-192.png">
-<title>Camino Francés Companion</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<title>Sideline — Ballinora</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --teal: #0f6e56;
-    --teal-light: #e6f2ef;
-    --bg: #f7f6f2;
-    --amber: #ba7517;
-    --amber-light: #fef3e2;
-    --blue: #378add;
-    --indigo: #4338ca;
-    --purple: #7c3aed;
-    --card-border: #e0e0e0;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); min-height: 100vh; display: flex; justify-content: center; }
-  .app { width: 100%; max-width: 480px; display: flex; flex-direction: column; min-height: 100vh; }
+:root{
+  --ground:#0B100D; --surface:#161E19; --line:#2E3D34;
+  --chalk:#E9EFEA; --dim:#7C8C82;
+  --us:#3DD68C; --us-bg:#0E3D28; --us-br:#1F6B48; --us-tx:#BFF3D9;
+  --them:#FF5A52; --them-bg:#48120F; --them-br:#7A2621; --them-tx:#FFC9C5;
+  --gold:#F0B429; --gold-bg:#4A3406; --gold-br:#6B5312; --gold-tx:#F7DFA4;
+  --r:9px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+html,body{height:100%;overscroll-behavior:none}
+body{background:var(--ground);color:var(--chalk);font-family:'Barlow',system-ui,sans-serif;
+  padding:env(safe-area-inset-top) 9px calc(env(safe-area-inset-bottom) + 6px);
+  max-width:520px;margin:0 auto;user-select:none;-webkit-user-select:none}
 
-  .header { background: var(--teal); color: white; padding: 14px 16px 10px; position: sticky; top: 0; z-index: 100; }
-  .header-top { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-  .header-top h1 { font-size: 1.1rem; font-weight: 700; flex: 1; }
-  .shell { font-size: 1.4rem; }
-  .progress-bar-wrap { background: rgba(255,255,255,0.25); border-radius: 4px; height: 6px; margin-bottom: 10px; }
-  .progress-bar { background: white; height: 6px; border-radius: 4px; transition: width 0.4s; }
-  .day-nav { display: flex; align-items: center; justify-content: space-between; }
-  .day-nav button { background: rgba(255,255,255,0.2); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-  .day-nav button:hover { background: rgba(255,255,255,0.35); }
-  .day-info { text-align: center; }
-  .day-info .day-title { font-weight: 700; font-size: 1rem; }
-  .day-info .day-date { font-size: 0.8rem; opacity: 0.85; }
+header{padding:7px 2px 8px}
+.hrow{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.clock{font-family:'Barlow Condensed',sans-serif;font-size:27px;font-weight:700;line-height:1;
+  font-variant-numeric:tabular-nums}
+.qtr{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:.14em;
+  color:var(--dim);text-transform:uppercase}
+.hb{background:transparent;border:1px solid var(--line);color:var(--dim);border-radius:var(--r);
+  font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:.08em;
+  text-transform:uppercase;padding:6px 10px;min-height:34px}
+.hb:active{background:var(--line)}
+.hb.on{border-color:var(--gold);color:var(--gold)}
+.score{display:flex;align-items:center;gap:8px;margin-top:7px;background:var(--surface);
+  border-radius:var(--r);padding:8px 11px}
+.sd{flex:1;min-width:0}
+.sd .l{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sd .v{font-family:'Barlow Condensed',sans-serif;font-size:25px;font-weight:700;line-height:1.05;
+  font-variant-numeric:tabular-nums}
+.sd.u .v{color:var(--us)} .sd.t .v,.sd.t .l{text-align:right} .sd.t .v{color:var(--them)}
+.mg{font-family:'Barlow Condensed',sans-serif;font-size:12px;color:var(--dim);
+  font-variant-numeric:tabular-nums;letter-spacing:.08em}
 
-  .tabs { display: flex; background: white; border-bottom: 1px solid var(--card-border); position: sticky; top: 112px; z-index: 99; }
-  .tab { flex: 1; padding: 10px 4px; text-align: center; font-size: 0.78rem; font-weight: 600; color: #666; cursor: pointer; border-bottom: 3px solid transparent; }
-  .tab.active { color: var(--teal); border-bottom-color: var(--teal); }
+.cols{display:grid;grid-template-columns:46px 1fr 1fr;gap:6px;margin:12px 0 5px;padding:0 2px}
+.ch{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:.15em;
+  text-transform:uppercase;text-align:center}
+.ch.u{color:var(--us)} .ch.t{color:var(--them)}
 
-  .content { flex: 1; padding: 14px; overflow-y: auto; }
+.grid{display:grid;grid-template-columns:46px 1fr 1fr;gap:6px;margin-bottom:6px}
+.rl{display:flex;align-items:center;justify-content:flex-end;padding-right:2px;
+  font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--dim)}
+.b{border:1px solid var(--line);background:var(--surface);color:var(--chalk);border-radius:var(--r);
+  min-height:52px;display:flex;align-items:center;justify-content:center;
+  font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:16px;letter-spacing:.07em;
+  text-transform:uppercase;line-height:1.05;padding:5px 4px;text-align:center}
+.b:active{transform:scale(.97);filter:brightness(1.35)}
+.b.u{border-color:var(--us-br);background:var(--us-bg);color:var(--us-tx)}
+.b.t{border-color:var(--them-br);background:var(--them-bg);color:var(--them-tx)}
+.b.g{border-color:var(--gold-br);background:var(--gold-bg);color:var(--gold-tx)}
+.b .n{font-size:11px;opacity:.55;margin-left:5px;font-variant-numeric:tabular-nums}
+.sep{height:1px;background:var(--line);margin:11px 0 9px;border:0}
 
-  .card { background: white; border: 1px solid var(--card-border); border-radius: 12px; padding: 14px; margin-bottom: 12px; }
-  .card-title { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #888; margin-bottom: 8px; }
+.st{display:flex;align-items:center;gap:7px;margin-top:9px;padding:0 2px;min-height:20px;
+  font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--dim)}
+.dot{width:9px;height:9px;border-radius:50%;flex:none;background:var(--us)}
+.dot.t{background:var(--them)}
+.st .last{margin-left:auto;font-family:'Barlow',sans-serif;text-transform:none;letter-spacing:0;
+  font-size:12px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-  .stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 12px; }
-  .stat-card { background: white; border: 1px solid var(--card-border); border-radius: 12px; padding: 12px 8px; text-align: center; }
-  .stat-val { font-size: 1.4rem; font-weight: 800; color: var(--teal); }
-  .stat-unit { font-size: 0.65rem; color: #999; font-weight: 600; text-transform: uppercase; }
-  .stat-label { font-size: 0.7rem; color: #555; margin-top: 2px; }
-
-  .chart-wrap { height: 160px; }
-
-  .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
-  .legend-item { display: flex; align-items: center; gap: 4px; font-size: 0.72rem; color: #555; }
-  .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-  .dot-cafe { background: var(--amber); }
-  .dot-water { background: var(--blue); }
-  .dot-shop { background: var(--indigo); }
-  .dot-church { background: var(--purple); }
-
-  .stop-card { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
-  .stop-card:last-child { border-bottom: none; }
-  .stop-icon { font-size: 1.3rem; width: 28px; text-align: center; flex-shrink: 0; margin-top: 2px; }
-  .stop-body { flex: 1; }
-  .stop-name { font-weight: 700; font-size: 0.9rem; }
-  .stop-meta { display: flex; gap: 8px; align-items: center; margin: 2px 0; }
-  .badge { font-size: 0.65rem; font-weight: 700; padding: 2px 7px; border-radius: 20px; text-transform: uppercase; }
-  .badge-cafe { background: #fef3e2; color: var(--amber); }
-  .badge-water { background: #e8f3fd; color: var(--blue); }
-  .badge-shop { background: #eef2ff; color: var(--indigo); }
-  .badge-church { background: #f5f3ff; color: var(--purple); }
-  .stop-km { font-size: 0.7rem; color: #999; }
-  .stop-note { font-size: 0.78rem; color: #555; line-height: 1.4; }
-
-  .breakfast-card { background: var(--teal-light); border: 1px solid #b2d4cc; border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; }
-  .breakfast-card .card-title { color: var(--teal); }
-  .bfast-name { font-weight: 700; font-size: 0.95rem; color: var(--teal); margin-bottom: 4px; }
-  .bfast-note { font-size: 0.8rem; color: #2d6b55; line-height: 1.4; }
-
-  .places-card { border: 1px solid #d0c4f0; border-radius: 12px; padding: 14px; margin-bottom: 12px; background: white; }
-  .places-card .card-title { color: #5b21b6; }
-  .place-item { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid #f0f0f0; }
-  .place-item:last-child { border-bottom: none; }
-  .place-num { font-size: 0.75rem; font-weight: 800; color: white; background: #7c3aed; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
-  .place-body .place-name { font-weight: 700; font-size: 0.88rem; margin-bottom: 2px; }
-  .place-body .place-note { font-size: 0.78rem; color: #555; line-height: 1.4; }
-
-  .waypoint-list .waypoint { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
-  .waypoint:last-child { border-bottom: none; }
-  .wp-dot { width: 12px; height: 12px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
-  .wp-name { font-weight: 600; font-size: 0.88rem; }
-  .wp-note { font-size: 0.75rem; color: #666; }
-  .wp-km { font-size: 0.72rem; color: #aaa; margin-left: auto; flex-shrink: 0; }
-  .stage-detail { background: var(--teal-light); border: 1px solid #b2d4cc; border-radius: 12px; padding: 14px; margin-bottom: 12px; }
-  .stage-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.82rem; border-bottom: 1px solid #d0e8e2; }
-  .stage-row:last-child { border-bottom: none; }
-  .stage-row span:first-child { color: #555; }
-  .stage-row span:last-child { font-weight: 700; color: var(--teal); }
-  .terrain-text { font-size: 0.8rem; color: #2d6b55; line-height: 1.5; margin-top: 8px; }
-
-  .summary-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 16px; }
-  .all-day-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: white; border: 1px solid var(--card-border); border-radius: 10px; margin-bottom: 8px; cursor: pointer; transition: border-color 0.2s; }
-  .all-day-item:hover { border-color: var(--teal); }
-  .all-day-item.active-day { border-color: var(--teal); border-width: 2px; }
-  .all-day-num { font-size: 0.7rem; font-weight: 800; color: white; background: var(--teal); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .all-day-info { flex: 1; }
-  .all-day-route { font-weight: 700; font-size: 0.85rem; }
-  .all-day-date { font-size: 0.72rem; color: #888; }
-  .all-day-km { font-size: 0.8rem; font-weight: 700; color: var(--teal); }
+.veil{position:fixed;inset:0;background:rgba(6,10,8,.88);display:none;align-items:flex-end;z-index:20}
+.veil.on{display:flex}
+.sheet{width:100%;max-width:520px;margin:0 auto;background:var(--surface);
+  border-top:1px solid var(--line);border-radius:15px 15px 0 0;
+  padding:15px 9px calc(env(safe-area-inset-bottom) + 15px)}
+.sheet h2{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:700;letter-spacing:.09em;
+  text-transform:uppercase;margin-bottom:2px}
+.sheet p{font-size:13px;color:var(--dim);margin-bottom:11px}
+.sheet input{width:100%;margin-bottom:7px;min-height:44px;padding:0 11px;border-radius:var(--r);
+  border:1px solid var(--line);background:var(--ground);color:var(--chalk);font-size:16px;
+  font-family:'Barlow',sans-serif}
+.sheet input::placeholder{color:var(--dim)}
+.skip{width:100%;margin-top:8px;background:transparent;border:1px solid var(--line);color:var(--dim);
+  border-radius:var(--r);min-height:40px;font-family:'Barlow Condensed',sans-serif;font-size:13px;
+  font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(150%);
+  background:var(--line);color:var(--chalk);border-radius:var(--r);padding:9px 15px;font-size:13px;
+  z-index:40;transition:transform .2s;pointer-events:none}
+.toast.on{transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body>
-<div class="app">
-  <div class="header">
-    <div class="header-top">
-      <span class="shell">🐚</span>
-      <h1>Camino Francés</h1>
+
+<header>
+  <div class="hrow">
+    <div>
+      <div class="clock" id="clock">00:00</div>
+      <div class="qtr" id="qtr">Q1 · paused</div>
     </div>
-    <div class="progress-bar-wrap">
-      <div class="progress-bar" id="progressBar"></div>
-    </div>
-    <div class="day-nav">
-      <button onclick="changeDay(-1)">‹</button>
-      <div class="day-info">
-        <div class="day-title" id="dayTitle"></div>
-        <div class="day-date" id="dayDate"></div>
-      </div>
-      <button onclick="changeDay(1)">›</button>
+    <div style="display:flex;gap:5px">
+      <button class="hb" id="run">Start</button>
+      <button class="hb" id="undo">Undo</button>
+      <button class="hb" id="csv">CSV</button>
     </div>
   </div>
-
-  <div class="tabs">
-    <div class="tab active" onclick="showTab('today',this)">Today</div>
-    <div class="tab" onclick="showTab('route',this)">Route</div>
-    <div class="tab" onclick="showTab('alldays',this)">All Days</div>
+  <div class="score">
+    <div class="sd u"><div class="l">Ballinora</div><div class="v" id="su">0-00</div></div>
+    <div class="mg" id="mg">LEVEL</div>
+    <div class="sd t"><div class="l" id="tn">Opposition</div><div class="v" id="st">0-00</div></div>
   </div>
+</header>
 
-  <div class="content">
-    <div id="tab-today"></div>
-    <div id="tab-route" style="display:none"></div>
-    <div id="tab-alldays" style="display:none"></div>
+<div class="cols">
+  <div></div>
+  <div class="ch u">We win it</div>
+  <div class="ch t">They win it</div>
+</div>
+
+<div class="grid">
+  <div class="rl">Attack</div>
+  <button class="b u" data-c="Attack|W">Win<span class="n" id="n-AW">0</span></button>
+  <button class="b t" data-c="Attack|L">Lose<span class="n" id="n-AL">0</span></button>
+  <div class="rl">Middle</div>
+  <button class="b u" data-c="Mid|W">Win<span class="n" id="n-MW">0</span></button>
+  <button class="b t" data-c="Mid|L">Lose<span class="n" id="n-ML">0</span></button>
+  <div class="rl">Defence</div>
+  <button class="b u" data-c="Def|W">Win<span class="n" id="n-DW">0</span></button>
+  <button class="b t" data-c="Def|L">Lose<span class="n" id="n-DL">0</span></button>
+</div>
+
+<div class="grid">
+  <div class="rl">Free</div>
+  <button class="b u" data-f="W">To us<span class="n" id="n-FW">0</span></button>
+  <button class="b t" data-f="L">To them<span class="n" id="n-FL">0</span></button>
+</div>
+
+<hr class="sep">
+
+<div class="cols">
+  <div></div>
+  <div class="ch u">Us</div>
+  <div class="ch t">Them</div>
+</div>
+
+<div class="grid">
+  <div class="rl">Score</div>
+  <button class="b u" data-s="US|P">Point</button>
+  <button class="b t" data-s="TH|P">Point</button>
+  <div class="rl">Wide</div>
+  <button class="b u" data-s="US|M">Miss</button>
+  <button class="b t" data-s="TH|M">Miss</button>
+  <div class="rl">Goal</div>
+  <button class="b u" data-s="US|G">Goal</button>
+  <button class="b t" data-s="TH|G">Goal</button>
+</div>
+
+<div class="grid">
+  <div class="rl">Chance</div>
+  <button class="b g" data-gc="1" style="grid-column:span 2">Goal chance — us<span class="n" id="n-GC">0</span></button>
+</div>
+
+<div class="st">
+  <span class="dot" id="dot"></span>
+  <span id="stx">we have it · mid</span>
+  <span class="last" id="last">nothing logged</span>
+</div>
+
+<div class="veil" id="po">
+  <div class="sheet">
+    <h2 id="po-t">Puck-out</h2>
+    <p id="po-p">Who won it, and how far?</p>
+    <div class="cols" style="margin:0 0 5px"><div></div><div class="ch u">We win</div><div class="ch t">They win</div></div>
+    <div class="grid" id="po-g" style="margin:0"></div>
+    <button class="skip" id="po-s">Didn't see it — skip</button>
   </div>
 </div>
 
+<div class="veil" id="setup">
+  <div class="sheet">
+    <h2>New match</h2>
+    <p>These four go straight into the report header.</p>
+    <input id="m-o" placeholder="Opposition">
+    <input id="m-c" placeholder="Competition">
+    <input id="m-v" placeholder="Venue">
+    <input id="m-d" placeholder="Date">
+    <button class="b u" id="m-go" style="width:100%;min-height:50px;margin-top:8px">Start logging</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
 <script>
-const STAGES = [
-  {
-    day: 1, date: "29 Mar 2026", from: "Calzadilla de la Cueza", to: "Sahagún",
-    rest: false, km: 23, ascent: 120, descent: 140, time: "5–6h",
-    terrain: "Flat meseta walking on dirt tracks and gravel paths across the Castilian plateau. Sparse shade — bring sun protection. The famous meseta silence sets in here.",
-    elevation: [890,888,885,882,880,878,876,875,874,872,870,868,866,864,862,860,858,856,854,852],
-    breakfast: { name: "Bar El Camino, Calzadilla", note: "Opens early for pilgrims — good bocadillos and strong café con leche before the long flat stretch.", km: 0 },
-    stops: [
-      { km: 7, type: "water", icon: "💧", name: "Fuente de Ledigos", note: "Reliable fountain at the village entrance. Fill up here — no water for 10km." },
-      { km: 12, type: "cafe", icon: "☕", name: "Bar, Terradillos de los Templarios", note: "Small bar with snacks and cold drinks. Templar history here — worth a quick look at the church." },
-      { km: 17, type: "church", icon: "⛪", name: "Iglesia de San Pedro, Moratinos", note: "Romanesque church with pilgrim stamp. The village is also known for its underground bodegas." },
-      { km: 21, type: "shop", icon: "🛒", name: "Supermercado, San Nicolás del Real Camino", note: "Last shop before Sahagún. Stock up on snacks for tomorrow." }
-    ],
-    places: [
-      { name: "Arco de San Benito", note: "Striking 15th-century arch — all that remains of the once-great Benedictine monastery of Sahagún, one of the most powerful in medieval Spain." },
-      { name: "Iglesia de San Tirso", note: "Remarkable Mudéjar-Romanesque church from the 12th century, a UNESCO-recognised architectural style unique to Spain." },
-      { name: "Museo de las Madres Benedictinas", note: "Small museum inside the convent with remarkable gold and silver religious artefacts. The nuns also sell homemade sweets." }
-    ],
-    accommodation: "Sahagún has good albergue options — Albergue Cluny is well regarded. The town has a supermarket, pharmacy and restaurants.",
-    town: "Sahagún"
-  },
-  {
-    day: 2, date: "30 Mar 2026", from: "Sahagún", to: "El Burgo Ranero",
-    rest: false, km: 19, ascent: 80, descent: 90, time: "4–5h",
-    terrain: "Classic meseta — long straight tracks through cereal fields. The Vía Romana route option is flatter and historic. Very exposed to wind and sun.",
-    elevation: [820,818,816,815,814,813,812,811,810,809,808,808,807,806,805,804,804,803,803,802],
-    breakfast: { name: "Café Central, Sahagún", note: "Popular with pilgrims on the main plaza. Tortilla and fresh orange juice recommended.", km: 0 },
-    stops: [
-      { km: 5, type: "church", icon: "⛪", name: "Ermita de la Virgen del Puente", note: "Small Romanesque chapel on the river bank, 12th century. Peaceful rest spot with a stamp." },
-      { km: 9, type: "cafe", icon: "☕", name: "Bar, Bercianos del Real Camino", note: "Halfway point with a welcoming bar. Good homemade tortilla. Small albergue if you need to stop early." },
-      { km: 14, type: "water", icon: "💧", name: "Fuente, Bercianos outskirts", note: "Last reliable water before El Burgo Ranero. Stay hydrated on the exposed meseta." }
-    ],
-    places: [
-      { name: "Iglesia de San Pedro, El Burgo Ranero", note: "Simple rural church in the village centre with a pilgrim stamp. The interior has a charming retablo worth seeing." },
-      { name: "La Laguna de El Burgo Ranero", note: "Small seasonal lagoon on the edge of the village, a resting point for migratory birds in spring. A peaceful evening walk." },
-      { name: "Village bodegas", note: "Like much of this region, El Burgo Ranero has traditional underground wine cellars carved into the hillside — look for the distinctive chimneys sticking out of the ground." }
-    ],
-    accommodation: "El Burgo Ranero — Albergue La Laguna is the main pilgrim option, friendly hosts. Small village with a bar/restaurant and basic shop.",
-    town: "El Burgo Ranero"
-  },
-  {
-    day: 3, date: "31 Mar 2026", from: "El Burgo Ranero", to: "Mansilla de las Mulas",
-    rest: false, km: 19, ascent: 100, descent: 110, time: "4–5h",
-    terrain: "Continuing meseta with gradual descent toward Mansilla. The path follows the old Roman road for stretches. Some tarmac approaching town.",
-    elevation: [802,800,798,797,796,795,794,793,792,791,790,789,788,787,786,785,784,783,782,800],
-    breakfast: { name: "Bar El Peregrino, El Burgo Ranero", note: "The village bar opens at 7am for pilgrims. Basic but warm — try the magdalenas.", km: 0 },
-    stops: [
-      { km: 6, type: "cafe", icon: "☕", name: "Bar, Reliegos", note: "Welcome stop after a long exposed stretch. Good coffee and snacks. Several Camino murals on the walls." },
-      { km: 10, type: "water", icon: "💧", name: "Fuente, Reliegos", note: "Public fountain in the village square. Reliable source." },
-      { km: 15, type: "shop", icon: "🛒", name: "Mini-mercado, Mansilla approach", note: "Small shop on the outskirts. Good for supplies before the town centre." },
-      { km: 19, type: "church", icon: "⛪", name: "Iglesia de Santa María, Mansilla", note: "Gothic church in the historic walled town. Get the pilgrim stamp here." }
-    ],
-    places: [
-      { name: "Medieval Walls of Mansilla", note: "Among the best-preserved medieval town walls in Castile, dating to the 13th century. Walk the full perimeter — it takes about 20 minutes and the views are lovely." },
-      { name: "Iglesia de Santa María", note: "The main church contains some fine Baroque altarpieces and is one of the few remaining Gothic buildings in the town." },
-      { name: "Puente sobre el Esla", note: "The old bridge over the Río Esla at the edge of town is a beautiful spot at sunset. The river is wide and calm here — good for tired feet too." }
-    ],
-    accommodation: "Mansilla de las Mulas has several albergues including the municipal option. Medieval walled town worth exploring. Good restaurants on the main street.",
-    town: "Mansilla de las Mulas"
-  },
-  {
-    day: 4, date: "1 Apr 2026", from: "Mansilla de las Mulas", to: "León",
-    rest: false, km: 19, ascent: 110, descent: 130, time: "4–5h",
-    terrain: "Increasingly urban as you approach León. The final stretch follows the river and enters through the old city gates. The cathedral approach is unforgettable.",
-    elevation: [800,798,796,795,793,792,790,789,788,787,786,786,785,785,784,784,840,850,840,835],
-    breakfast: { name: "Café, Mansilla main street", note: "Any bar on the main street — get a good breakfast before the urban walk into León.", km: 0 },
-    stops: [
-      { km: 7, type: "water", icon: "💧", name: "Fuente, Villarente", note: "Village fountain just after the medieval bridge, dating to the 13th century." },
-      { km: 10, type: "cafe", icon: "☕", name: "Bar Villarente", note: "Good mid-stage stop. Fresh bocadillos available." },
-      { km: 16, type: "shop", icon: "🛒", name: "Mercadona, León outskirts", note: "Large supermarket on the approach road. Excellent for resupply." },
-      { km: 19, type: "church", icon: "⛪", name: "Catedral de Santa María, León", note: "One of the great Gothic cathedrals of Spain — 1,800 stained glass windows. Get the pilgrim stamp." }
-    ],
-    places: [
-      { name: "Catedral de León", note: "A must. Over 1,800 stained glass windows spanning 1,800 sq metres make this arguably the finest Gothic cathedral in Spain. Visit in the morning when the light pours through the west windows." },
-      { name: "Real Basílica de San Isidoro", note: "Pre-Romanesque basilica housing the Panteón Real — the royal mausoleum with extraordinary 12th-century frescoes, often called the 'Sistine Chapel of the Romanesque'." },
-      { name: "Barrio Húmedo", note: "León's old quarter and tapas district. By tradition, every drink comes with a free tapa. The streets around Plaza de San Martín come alive in the evening." },
-      { name: "Museo de Arte Contemporáneo (MUSAC)", note: "Award-winning contemporary art museum in a striking coloured-glass building. Free on Sundays." }
-    ],
-    accommodation: "León — large city with excellent pilgrim albergues. Albergue Benedictinas on Calle de la Abadía is highly rated. The city deserves a full evening of exploration.",
-    town: "León"
-  },
-  {
-    day: 5, date: "2 Apr 2026", from: "León", to: "Mazarife",
-    rest: false, km: 22, ascent: 150, descent: 170, time: "5–6h",
-    terrain: "Leaving the city, the route splits — the via Mazarife is quieter, more rural and preferred by most pilgrims over the busy N-120 road route. Rolling farmland.",
-    elevation: [835,830,825,820,816,814,812,810,808,806,804,802,800,798,796,794,792,790,788,870],
-    breakfast: { name: "Café near León cathedral", note: "Get a proper breakfast in León before the long day — many good cafés near the cathedral. You won't find much for the first 8km.", km: 0 },
-    stops: [
-      { km: 5, type: "church", icon: "⛪", name: "Ermita del Camino, Virgen del Camino", note: "Striking modernist sanctuary, site of a Marian apparition. Bronze apostle sculptures on the façade are remarkable. Pilgrim stamp available." },
-      { km: 11, type: "water", icon: "💧", name: "Fuente, Chozas de Abajo", note: "Village fountain in the central square. Shaded seating — good break spot." },
-      { km: 14, type: "cafe", icon: "☕", name: "Bar Rural, Chozas de Abajo", note: "Small village bar, friendly owner who welcomes pilgrims. Simple tapas available." },
-      { km: 19, type: "shop", icon: "🛒", name: "Tienda, Oncina de la Valdoncina", note: "Small shop with basics. Last resupply point before Mazarife." }
-    ],
-    places: [
-      { name: "Casa de Jesús Jato", note: "The legendary albergue host is an institution on the Camino — his walls are covered in pilgrim art, poems and mementos going back decades. Worth spending time looking through them." },
-      { name: "Iglesia de Santiago, Mazarife", note: "Small parish church dedicated to Saint James, with a pilgrim stamp. The village is tiny but the church has a charming scallop shell motif above the door." },
-      { name: "Páramo Leonés at sunset", note: "The flat plains around Mazarife offer an extraordinary panoramic sunset with nothing on the horizon. Bring a drink and watch from the edge of the village." }
-    ],
-    accommodation: "Mazarife — small village but a pilgrim favourite. Casa de Jesús is legendary — book ahead in season. Good communal dinners.",
-    town: "Mazarife"
-  },
-  {
-    day: 6, date: "3 Apr 2026", from: "Mazarife", to: "Astorga",
-    rest: false, km: 31, ascent: 280, descent: 260, time: "7–8h",
-    terrain: "Longest day of this stretch. Crosses the Páramo plateau before descending to the Órbigo river with its famous medieval bridge, then climbs gently to the Roman city of Astorga.",
-    elevation: [870,865,860,855,850,845,840,836,832,828,824,822,820,819,818,820,825,830,835,870],
-    breakfast: { name: "Bar, Mazarife", note: "The village bar opens early for pilgrims on this long stage. Eat well — it's a big day with 31km to Astorga.", km: 0 },
-    stops: [
-      { km: 8, type: "cafe", icon: "☕", name: "Bar, San Martín del Camino", note: "Good stop at the end of the Páramo section. Several bars here catering to pilgrims." },
-      { km: 13, type: "water", icon: "💧", name: "Fuente, Hospital de Órbigo", note: "Water fountain near the Puente del Paso Honroso — one of the longest medieval bridges in Spain." },
-      { km: 14, type: "church", icon: "⛪", name: "Iglesia de San Juan Bautista, Hospital de Órbigo", note: "Pilgrim stamp here. The famous medieval bridge outside is the real highlight." },
-      { km: 22, type: "cafe", icon: "☕", name: "Bar, Santibáñez de Valdeiglesia", note: "Important mid-afternoon break. Good coffee and cold drinks after the long plateau section." },
-      { km: 28, type: "shop", icon: "🛒", name: "Supermercado, Astorga outskirts", note: "Stock up here. Convenient on the way into the city." },
-      { km: 31, type: "church", icon: "⛪", name: "Catedral de Astorga", note: "Beautiful Gothic cathedral — get your pilgrim stamp. The Palacio Episcopal by Gaudí is right next door." }
-    ],
-    places: [
-      { name: "Palacio Episcopal de Gaudí", note: "Antoni Gaudí designed this neo-Gothic palace in 1889 — one of his few works outside Catalonia. Now houses the Museo de los Caminos with Camino artefacts and religious art. Don't miss it." },
-      { name: "Catedral de Santa María de Astorga", note: "Gothic and Baroque cathedral built over 500 years. The altarpiece is one of the finest in the region. The pilgrim stamp office is in the cloister." },
-      { name: "Museo Romano de Astorga", note: "Astorga (ancient Asturica Augusta) was a major Roman city. This small but excellent museum has mosaics, coins and everyday Roman objects excavated from beneath the modern streets." },
-      { name: "Chocolate shops, Astorga", note: "Astorga has been famous for its chocolate since the 17th century — there are still several artisan chocolatiers in the old town. Try the mantecadas (local pastries) too." }
-    ],
-    accommodation: "Astorga — Roman city with excellent facilities. Albergue de Peregrinos San Javier is the classic option.",
-    town: "Astorga"
-  }
+/* ─────────────────────────────────────────────────────────────
+   Sideline v3 — Ballinora Junior A Hurling
+
+   CONTRACT: every figure in the half-time and match reports is
+   computed from the KPI Summary block. NO report figure depends
+   on inferred state. Possession and ChainID exist only to give
+   primitive chains for free; if they drift, reports are unaffected.
+
+   Ball share (feeds Cashing-In) = contested wins + puck-out wins
+   over contested + puck-outs. Frees and turnovers are NOT in it.
+   ───────────────────────────────────────────────────────────── */
+
+var KPIS = [
+ 'Point – Play (Us)','Miss – Play (Us)','Point – Free (Us)','Miss – Free (Us)','Goal – Us','Goal Chance – Us',
+ 'Point – Play (Them)','Miss – Play (Them)','Point – Free (Them)','Miss – Free (Them)','Goal – Them',
+ 'Our PO – We Win – Short','Our PO – We Win – Long','Our PO – We Lose – Short','Our PO – We Lose – Long',
+ 'Their PO – We Win – Short','Their PO – We Win – Long','Their PO – We Lose – Short','Their PO – We Lose – Long',
+ 'Attack – Favorable Pass','Attack – Run Thru 45','Attack – Contested Win','Attack – Contested Loss','Attack – Unforced Turnover',
+ 'Mid – Favorable','Mid – Contested Win','Mid – Contested Loss','Mid – Unforced Loss','Mid – Reset',
+ 'Def – Opp Favorable','Def – Contested Win','Def – Contested Loss','Def – Opp Unforced Turnover',
+ 'Free Won','Free Lost','Card for Us','Turnover Won','T/O Forced (Them)','Unforced Win (Them)'
 ];
 
-const TOTAL_KM = STAGES.reduce((s,d) => s + (d.rest ? 0 : d.km), 0);
-let currentDay = 0;
-let elevChart = null;
+var S = {
+  poss:'US', zone:'Mid', chain:1, pendingFree:null, log:[],
+  running:false, started:0, elapsed:0,
+  meta:{them:'Opposition', comp:'\u2014', venue:'\u2014', date:''}
+};
+var hist = [];
 
-function changeDay(d) {
-  currentDay = Math.max(0, Math.min(STAGES.length - 1, currentDay + d));
-  renderAll();
+function snap(){ hist.push(JSON.stringify({p:S.poss,z:S.zone,c:S.chain,f:S.pendingFree,n:S.log.length})); if(hist.length>400) hist.shift(); }
+function ms(){ return S.elapsed + (S.running ? Date.now()-S.started : 0); }
+function qOf(){ var m = ms()/60000; return m<17.5?1 : m<35?2 : m<52.5?3 : 4; }
+function mmss(t){ var s=Math.floor(t/1000); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
+
+function emit(kpi){
+  S.log.push({kpi:kpi, q:qOf(), time:'Q'+qOf()+' '+mmss(ms()), ts:Date.now(),
+              poss:S.poss, zone:S.zone, chain:S.chain});
+  save();
+}
+function flip(to){ if(S.poss !== to){ S.poss = to; S.chain++; } }
+function dead(){ S.chain++; }
+function cnt(k){ var n=0; for(var i=0;i<S.log.length;i++) if(S.log[i].kpi===k) n++; return n; }
+
+function contest(zone, res){
+  snap(); S.zone = zone; S.pendingFree = null;
+  if(res === 'W'){ flip('US');   emit(zone + ' \u2013 Contested Win'); }
+  else           { flip('THEM'); emit(zone + ' \u2013 Contested Loss'); }
+  render();
 }
 
-function showTab(name, el) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-  ['today','route','alldays'].forEach(t => {
-    document.getElementById('tab-' + t).style.display = t === name ? '' : 'none';
-  });
-  if (name === 'today') renderToday();
+function free(res){
+  snap();
+  if(res === 'W'){ flip('US');   emit('Free Won');  S.pendingFree = 'US'; }
+  else           { flip('THEM'); emit('Free Lost'); S.pendingFree = 'THEM'; }
+  render();
 }
 
-function renderAll() {
-  const s = STAGES[currentDay];
-  document.getElementById('dayTitle').textContent = `Day ${s.day}: ${s.from} → ${s.to}`;
-  document.getElementById('dayDate').textContent = s.date;
-  const kmDone = STAGES.slice(0, currentDay).reduce((a,d) => a + (d.rest ? 0 : d.km), 0);
-  document.getElementById('progressBar').style.width = Math.round((kmDone / TOTAL_KM) * 100) + '%';
-  renderToday();
-  renderRoute();
-  renderAllDays();
-}
-
-function renderToday() {
-  const s = STAGES[currentDay];
-  const el = document.getElementById('tab-today');
-
-  const stopsHTML = s.stops.map(st => `
-    <div class="stop-card">
-      <div class="stop-icon">${st.icon}</div>
-      <div class="stop-body">
-        <div class="stop-name">${st.name}</div>
-        <div class="stop-meta">
-          <span class="badge badge-${st.type}">${st.type}</span>
-          <span class="stop-km">${st.km}km</span>
-        </div>
-        <div class="stop-note">${st.note}</div>
-      </div>
-    </div>`).join('');
-
-  const placesHTML = s.places.map((p, i) => `
-    <div class="place-item">
-      <div class="place-num">${i+1}</div>
-      <div class="place-body">
-        <div class="place-name">${p.name}</div>
-        <div class="place-note">${p.note}</div>
-      </div>
-    </div>`).join('');
-
-  el.innerHTML = `
-    <div class="stats">
-      <div class="stat-card"><div class="stat-val">${s.km}</div><div class="stat-unit">km</div><div class="stat-label">Distance</div></div>
-      <div class="stat-card"><div class="stat-val">${s.ascent}</div><div class="stat-unit">m ↑</div><div class="stat-label">Ascent</div></div>
-      <div class="stat-card"><div class="stat-val">${s.time}</div><div class="stat-unit">hrs</div><div class="stat-label">Est. Time</div></div>
-    </div>
-    <div class="card">
-      <div class="card-title">Elevation Profile</div>
-      <div class="legend">
-        <div class="legend-item"><span class="dot dot-cafe"></span>Café</div>
-        <div class="legend-item"><span class="dot dot-water"></span>Water</div>
-        <div class="legend-item"><span class="dot dot-shop"></span>Shop</div>
-        <div class="legend-item"><span class="dot dot-church"></span>Church</div>
-      </div>
-      <div class="chart-wrap"><canvas id="elevChart"></canvas></div>
-    </div>
-    <div class="breakfast-card">
-      <div class="card-title">☀️ Breakfast</div>
-      <div class="bfast-name">${s.breakfast.name}</div>
-      <div class="bfast-note">${s.breakfast.note}</div>
-    </div>
-    <div class="card">
-      <div class="card-title">Trail Stops</div>
-      ${stopsHTML}
-    </div>
-    <div class="places-card">
-      <div class="card-title">📍 Places to Visit in ${s.to}</div>
-      ${placesHTML}
-    </div>`;
-
-  requestAnimationFrame(() => drawChart(s));
-}
-
-function drawChart(s) {
-  const canvas = document.getElementById('elevChart');
-  if (!canvas) return;
-  if (elevChart) { elevChart.destroy(); elevChart = null; }
-
-  const n = s.elevation.length;
-  function elevAtKm(km) {
-    const t = (km / s.km) * (n - 1);
-    const lo = Math.floor(t), hi = Math.ceil(t);
-    if (lo === hi) return s.elevation[lo];
-    return s.elevation[lo] + (s.elevation[hi] - s.elevation[lo]) * (t - lo);
+function shot(side, kind){
+  snap();
+  var us = side === 'US';
+  flip(us ? 'US' : 'THEM');
+  if(kind === 'G'){ emit(us ? 'Goal \u2013 Us' : 'Goal \u2013 Them'); }
+  else {
+    var frm = (S.pendingFree === (us ? 'US' : 'THEM')) ? 'Free' : 'Play';
+    emit((kind === 'P' ? 'Point \u2013 ' : 'Miss \u2013 ') + frm + ' ' + (us ? '(Us)' : '(Them)'));
   }
-
-  const elevData = s.elevation.map((y, i) => ({ x: parseFloat(((i / (n-1)) * s.km).toFixed(2)), y }));
-  const dotColors = { cafe: '#ba7517', water: '#378add', shop: '#4338ca', church: '#7c3aed' };
-
-  const stopPoints = s.stops.map(st => ({
-    x: st.km,
-    y: elevAtKm(st.km),
-    color: dotColors[st.type] || '#888',
-    label: st.name.split(',')[0]
-  }));
-
-  const labelPlugin = {
-    id: 'stopLabels',
-    afterDatasetsDraw(chart) {
-      const ctx = chart.ctx;
-      const ds1 = chart.getDatasetMeta(1);
-      ds1.data.forEach((pt, i) => {
-        ctx.save();
-        ctx.font = '600 9px -apple-system, sans-serif';
-        ctx.fillStyle = dotColors[s.stops[i].type] || '#555';
-        ctx.textAlign = 'center';
-        ctx.fillText(stopPoints[i].label, pt.x, pt.y - 10);
-        ctx.restore();
-      });
-    }
-  };
-
-  elevChart = new Chart(canvas, {
-    type: 'scatter',
-    plugins: [labelPlugin],
-    data: {
-      datasets: [
-        {
-          type: 'line',
-          data: elevData,
-          borderColor: '#0f6e56',
-          backgroundColor: 'rgba(15,110,86,0.08)',
-          borderWidth: 2,
-          fill: true,
-          pointRadius: 0,
-          tension: 0.3,
-          order: 2
-        },
-        {
-          type: 'scatter',
-          data: stopPoints.map(p => ({ x: p.x, y: p.y })),
-          pointBackgroundColor: stopPoints.map(p => p.color),
-          pointBorderColor: 'white',
-          pointBorderWidth: 1.5,
-          pointRadius: 6,
-          pointHoverRadius: 8,
-          order: 1
-        }
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      layout: { padding: { top: 20 } },
-      plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: {
-          label: ctx => ctx.datasetIndex === 1
-            ? `${s.stops[ctx.dataIndex]?.name || ''} (${ctx.parsed.x}km)`
-            : `${Math.round(ctx.parsed.y)}m`
-        }}
-      },
-      scales: {
-        x: { type: 'linear', min: 0, max: s.km, ticks: { font: { size: 10 }, callback: v => v + 'km' }, grid: { display: false } },
-        y: { ticks: { font: { size: 10 }, callback: v => v + 'm' }, grid: { color: '#f0f0f0' } }
-      }
-    }
-  });
+  S.pendingFree = null; dead();
+  askPO(us ? 'THEM' : 'US');
+  render();
 }
 
-function renderRoute() {
-  const s = STAGES[currentDay];
-  const el = document.getElementById('tab-route');
-  const dotColors = { cafe: '#ba7517', water: '#378add', shop: '#4338ca', church: '#7c3aed' };
+function chance(){ snap(); S.zone='Attack'; flip('US'); emit('Goal Chance \u2013 Us'); render(); }
 
-  const waypointsHTML = [
-    `<div class="waypoint"><div class="wp-dot" style="background:var(--teal)"></div><div class="wp-name">${s.from}</div><div class="wp-km">Start</div></div>`,
-    ...s.stops.map(st => `
-      <div class="waypoint">
-        <div class="wp-dot" style="background:${dotColors[st.type]}"></div>
-        <div><div class="wp-name">${st.name}</div><div class="wp-note">${st.note}</div></div>
-        <div class="wp-km">${st.km}km</div>
-      </div>`),
-    `<div class="waypoint"><div class="wp-dot" style="background:var(--teal)"></div><div class="wp-name">${s.to}</div><div class="wp-km">${s.km}km</div></div>`
-  ].join('');
-
-  el.innerHTML = `
-    <div class="stage-detail">
-      <div class="card-title" style="color:var(--teal)">Stage ${s.day} Details</div>
-      <div class="stage-row"><span>Distance</span><span>${s.km} km</span></div>
-      <div class="stage-row"><span>Ascent</span><span>${s.ascent} m</span></div>
-      <div class="stage-row"><span>Descent</span><span>${s.descent} m</span></div>
-      <div class="stage-row"><span>Est. Time</span><span>${s.time}</span></div>
-      <div class="terrain-text">${s.terrain}</div>
-    </div>
-    <div class="card">
-      <div class="card-title">Waypoints</div>
-      <div class="waypoint-list">${waypointsHTML}</div>
-    </div>
-    <div class="card">
-      <div class="card-title">🏠 Accommodation</div>
-      <div style="font-size:0.82rem;color:#333;line-height:1.5">${s.accommodation}</div>
-    </div>`;
-}
-
-function renderAllDays() {
-  const el = document.getElementById('tab-alldays');
-  const totalKm = STAGES.reduce((a,s) => a + (s.rest ? 0 : s.km), 0);
-  const totalAscent = STAGES.reduce((a,s) => a + (s.rest ? 0 : s.ascent), 0);
-
-  const daysHTML = STAGES.map((s, i) => `
-    <div class="all-day-item ${i === currentDay ? 'active-day' : ''}" onclick="jumpToDay(${i})">
-      <div class="all-day-num">${s.day}</div>
-      <div class="all-day-info">
-        <div class="all-day-route">${s.from} → ${s.to}</div>
-        <div class="all-day-date">${s.date}</div>
-      </div>
-      <div class="all-day-km">${s.km} km</div>
-    </div>`).join('');
-
-  el.innerHTML = `
-    <div class="summary-stats">
-      <div class="stat-card"><div class="stat-val">${STAGES.length}</div><div class="stat-unit">days</div><div class="stat-label">Total</div></div>
-      <div class="stat-card"><div class="stat-val">${totalKm}</div><div class="stat-unit">km</div><div class="stat-label">Total</div></div>
-      <div class="stat-card"><div class="stat-val">${totalAscent}</div><div class="stat-unit">m ↑</div><div class="stat-label">Ascent</div></div>
-    </div>
-    ${daysHTML}`;
-}
-
-function jumpToDay(i) {
-  currentDay = i;
-  document.querySelectorAll('.tab').forEach((t,idx) => t.classList.toggle('active', idx === 0));
-  ['today','route','alldays'].forEach((t,idx) => {
-    document.getElementById('tab-' + t).style.display = idx === 0 ? '' : 'none';
-  });
-  renderAll();
-}
-
-renderAll();
-</script>
-
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js');
+var poOwner = null;
+function askPO(owner){
+  poOwner = owner;
+  document.getElementById('po-t').textContent = owner==='US' ? 'Our puck-out' : 'Their puck-out';
+  var g = document.getElementById('po-g'); g.innerHTML = '';
+  ['Short','Long'].forEach(function(len){
+    var lab = document.createElement('div'); lab.className='rl'; lab.textContent = len; g.appendChild(lab);
+    ['W','L'].forEach(function(res){
+      var b = document.createElement('button');
+      b.className = 'b ' + (res==='W' ? 'u' : 't');
+      b.textContent = res==='W' ? 'We win' : 'They win';
+      b.onclick = function(){ takePO(res, len); };
+      g.appendChild(b);
     });
-  }
+  });
+  document.getElementById('po').classList.add('on');
+}
+function takePO(res, len){
+  var own = poOwner;
+  S.poss = res==='W' ? 'US' : 'THEM';
+  S.zone = len==='Long' ? 'Mid' : (own==='THEM' ? 'Attack' : 'Def');
+  S.chain++; S.pendingFree = null;
+  emit((own==='US' ? 'Our PO' : 'Their PO') + ' \u2013 ' + (res==='W' ? 'We Win' : 'We Lose') + ' \u2013 ' + len);
+  closePO(); render();
+}
+function closePO(){ document.getElementById('po').classList.remove('on'); poOwner = null; }
+
+function undo(){
+  if(!hist.length){ toast('Nothing to undo'); return; }
+  var h = JSON.parse(hist.pop());
+  S.log.length = h.n; S.poss=h.p; S.zone=h.z; S.chain=h.c; S.pendingFree=h.f;
+  closePO(); save(); render(); toast('Undone');
+}
+
+function render(){
+  var gu=cnt('Goal \u2013 Us'), gt=cnt('Goal \u2013 Them');
+  var pu=cnt('Point \u2013 Play (Us)')+cnt('Point \u2013 Free (Us)');
+  var pt=cnt('Point \u2013 Play (Them)')+cnt('Point \u2013 Free (Them)');
+  document.getElementById('su').textContent = gu+'-'+String(pu).padStart(2,'0');
+  document.getElementById('st').textContent = gt+'-'+String(pt).padStart(2,'0');
+  var m = (gu*3+pu)-(gt*3+pt);
+  document.getElementById('mg').textContent = m===0 ? 'LEVEL' : (m>0?'+':'')+m;
+  document.getElementById('tn').textContent = S.meta.them;
+
+  var ids = {'n-AW':'Attack \u2013 Contested Win','n-AL':'Attack \u2013 Contested Loss',
+             'n-MW':'Mid \u2013 Contested Win','n-ML':'Mid \u2013 Contested Loss',
+             'n-DW':'Def \u2013 Contested Win','n-DL':'Def \u2013 Contested Loss',
+             'n-FW':'Free Won','n-FL':'Free Lost','n-GC':'Goal Chance \u2013 Us'};
+  for(var id in ids) document.getElementById(id).textContent = cnt(ids[id]);
+
+  document.getElementById('dot').className = 'dot' + (S.poss==='THEM' ? ' t' : '');
+  document.getElementById('stx').textContent =
+    (S.poss==='US' ? 'we have it' : 'they have it') + ' \u00b7 ' + S.zone.toLowerCase() +
+    (S.pendingFree ? ' \u00b7 free pending' : '') + ' \u00b7 c' + S.chain;
+  var L = S.log[S.log.length-1];
+  document.getElementById('last').textContent = L ? L.kpi : 'nothing logged';
+  document.getElementById('run').textContent = S.running ? 'Pause' : (ms() ? 'Resume' : 'Start');
+  document.getElementById('run').classList.toggle('on', S.running);
+}
+function tick(){
+  document.getElementById('clock').textContent = mmss(ms());
+  document.getElementById('qtr').textContent = 'Q'+qOf()+(S.running ? ' \u00b7 live' : ' \u00b7 paused');
+}
+
+function save(){ try{ localStorage.setItem('sideline_v3', JSON.stringify(S)); }catch(e){} }
+function load(){ try{ var r=localStorage.getItem('sideline_v3'); if(r){ var p=JSON.parse(r); if(p&&p.log){ S=p; S.running=false; } } }catch(e){} }
+
+function csv(){
+  var q=function(s){ return '"'+String(s==null?'':s).replace(/"/g,'""')+'"'; };
+  var L=[];
+  L.push('Match Metadata,,,,,,');
+  L.push('Opposition,'+q(S.meta.them));
+  L.push('Competition,'+q(S.meta.comp));
+  L.push('Venue,'+q(S.meta.venue));
+  L.push('Date,'+q(S.meta.date));
+  L.push('');
+  L.push('Event Log,,,,,,');
+  L.push('Event,Quarter,MatchTime,Timestamp_ms,Possession,Zone,ChainID');
+  S.log.forEach(function(e){ L.push([q(e.kpi),e.q,q(e.time),e.ts,e.poss,e.zone,e.chain].join(',')); });
+  L.push('');
+  L.push('KPI Summary,,,,,');
+  L.push('KPI,Q1,Q2,Q3,Q4,Total');
+  KPIS.forEach(function(k){
+    var qq=[1,2,3,4].map(function(n){
+      var c=0; for(var i=0;i<S.log.length;i++) if(S.log[i].kpi===k && S.log[i].q===n) c++;
+      return c;
+    });
+    L.push(q(k)+','+qq.join(',')+','+(qq[0]+qq[1]+qq[2]+qq[3]));
+  });
+  var b=new Blob([L.join('\n')],{type:'text/csv;charset=utf-8;'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(b);
+  a.download='gaa_'+String(S.meta.them).replace(/\W+/g,'_')+'_'+String(S.meta.date).replace(/\W+/g,'_')+'.csv';
+  a.click();
+  toast(S.log.length+' events \u00b7 KPI summary included');
+}
+
+var tt;
+function toast(m){ var e=document.getElementById('toast'); e.textContent=m; e.classList.add('on');
+  clearTimeout(tt); tt=setTimeout(function(){ e.classList.remove('on'); },1500); }
+
+document.querySelectorAll('[data-c]').forEach(function(b){
+  var p=b.dataset.c.split('|'); b.onclick=function(){ contest(p[0],p[1]); };
+});
+document.querySelectorAll('[data-f]').forEach(function(b){ b.onclick=function(){ free(b.dataset.f); }; });
+document.querySelectorAll('[data-s]').forEach(function(b){
+  var p=b.dataset.s.split('|'); b.onclick=function(){ shot(p[0],p[1]); };
+});
+document.querySelector('[data-gc]').onclick = chance;
+document.getElementById('run').onclick=function(){
+  if(S.running){ S.elapsed=ms(); S.running=false; } else { S.started=Date.now(); S.running=true; }
+  save(); render();
+};
+document.getElementById('undo').onclick=undo;
+document.getElementById('csv').onclick=csv;
+document.getElementById('po-s').onclick=function(){ closePO(); toast('Puck-out skipped'); };
+document.getElementById('m-go').onclick=function(){
+  var v=function(i){ return (document.getElementById(i).value||'').trim(); };
+  S.meta.them=v('m-o')||'Opposition'; S.meta.comp=v('m-c')||'\u2014';
+  S.meta.venue=v('m-v')||'\u2014'; S.meta.date=v('m-d')||new Date().toDateString();
+  save(); document.getElementById('setup').classList.remove('on'); render();
+};
+document.addEventListener('gesturestart', function(e){ e.preventDefault(); });
+
+load();
+document.getElementById('m-d').value = new Date().toDateString();
+if(!S.log.length && S.meta.them === 'Opposition') document.getElementById('setup').classList.add('on');
+render(); tick(); setInterval(tick, 500);
 </script>
 </body>
 </html>
