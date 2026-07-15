@@ -94,6 +94,17 @@ header{padding:7px 2px 8px}
   background:var(--line);color:var(--chalk);border-radius:var(--r);padding:9px 15px;font-size:13px;
   z-index:40;transition:transform .2s;pointer-events:none}
 .toast.on{transform:translateX(-50%) translateY(0)}
+.rt{width:100%;border-collapse:collapse;font-size:13px}
+.rt th{text-align:left;padding:6px 5px;font-family:'Barlow Condensed',sans-serif;font-size:11px;
+  font-weight:600;letter-spacing:.11em;text-transform:uppercase;color:var(--dim);
+  border-bottom:1px solid var(--line)}
+.rt td{padding:7px 5px;border-bottom:1px solid rgba(46,61,52,.5)}
+.rt td.tg{color:var(--dim);font-size:11px;white-space:nowrap}
+.rt td.vv{font-variant-numeric:tabular-nums;white-space:nowrap}
+.rt tr.sp td{padding:3px;border:0}
+.pil{margin-top:11px;padding:9px;border:1px solid var(--line);border-radius:var(--r);text-align:center;
+  font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:600;letter-spacing:.09em;
+  text-transform:uppercase}
 </style>
 </head>
 <body>
@@ -105,8 +116,10 @@ header{padding:7px 2px 8px}
       <div class="qtr" id="qtr">Q1 · paused</div>
     </div>
     <div style="display:flex;gap:5px">
-      <button class="hb" id="run">Start</button>
+      <button class="hb" id="flow">Start</button>
+      <button class="hb" id="pause">II</button>
       <button class="hb" id="undo">Undo</button>
+      <button class="hb" id="stat">KPI</button>
       <button class="hb" id="csv">CSV</button>
     </div>
   </div>
@@ -194,6 +207,31 @@ header{padding:7px 2px 8px}
   </div>
 </div>
 
+<div class="veil" id="stats">
+  <div class="sheet" style="max-height:88vh;overflow-y:auto">
+    <h2>The readings</h2>
+    <p id="sc-sub">Live — same maths as the match report.</p>
+    <div id="sc-body"></div>
+    <button class="skip" id="sc-x">Back to logging</button>
+  </div>
+</div>
+
+<div class="veil" id="cf">
+  <div class="sheet">
+    <h2 id="cf-t">Confirm</h2>
+    <p id="cf-m"></p>
+    <div class="grid" style="grid-template-columns:1fr 1fr;margin:0">
+      <button class="b t" id="cf-n">Cancel</button>
+      <button class="b u" id="cf-y">Yes</button>
+    </div>
+  </div>
+</div>
+
+<div id="warn" style="display:none;position:fixed;top:0;left:0;right:0;z-index:50;background:#7A2621;
+  color:#FFC9C5;padding:9px 12px;font-size:13px;text-align:center">
+  Storage unavailable — do NOT close this tab. Export the CSV now.
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -222,14 +260,29 @@ var KPIS = [
 
 var S = {
   poss:'US', zone:'Mid', chain:1, pendingFree:null, log:[],
-  running:false, started:0, elapsed:0,
+  flow:'pre',                       // pre → h1 → ht → h2 → ended
+  hStart:0, hPaused:0, pausedAt:0,  // clock for the CURRENT half only
   meta:{them:'Opposition', comp:'\u2014', venue:'\u2014', date:''}
 };
 var hist = [];
 
 function snap(){ hist.push(JSON.stringify({p:S.poss,z:S.zone,c:S.chain,f:S.pendingFree,n:S.log.length})); if(hist.length>400) hist.shift(); }
-function ms(){ return S.elapsed + (S.running ? Date.now()-S.started : 0); }
-function qOf(){ var m = ms()/60000; return m<17.5?1 : m<35?2 : m<52.5?3 : 4; }
+
+/* The clock RESTARTS at half time — Q3 begins at 00:00, exactly as v2 did.
+   Quarters are 15 minutes. Get this wrong and every H1/H2 figure in the
+   report is silently wrong, because the Quarter column drives the split. */
+function live(){ return S.flow === 'h1' || S.flow === 'h2'; }
+function ms(){
+  if(S.flow === 'pre') return 0;
+  if(!S.hStart) return 0;
+  var end = S.pausedAt ? S.pausedAt : Date.now();
+  return Math.max(0, end - S.hStart - S.hPaused);
+}
+function qOf(){
+  var half = (S.flow === 'h2' || S.flow === 'ended') ? 2 : 1;
+  var m = ms()/60000;
+  return (half === 1) ? (m < 15 ? 1 : 2) : (m < 15 ? 3 : 4);
+}
 function mmss(t){ var s=Math.floor(t/1000); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
 
 function emit(kpi){
@@ -237,26 +290,37 @@ function emit(kpi){
               poss:S.poss, zone:S.zone, chain:S.chain});
   save();
 }
-function flip(to){ if(S.poss !== to){ S.poss = to; S.chain++; } }
-function dead(){ S.chain++; }
+function guard(){
+  if(live()) return true;
+  toast(S.flow==='pre' ? 'Start the first half first'
+      : S.flow==='ht' ? 'Half time — start the second half'
+      : S.flow==='ended' ? 'Match is over' : 'Clock is paused');
+  return false;
+}
+/* Possession is SAMPLED (only the first contest per zone entry is logged), so it
+   must never define a boundary. A passage runs restart → restart, and restarts
+   (puck-outs, frees, shots) are a census. Only those may increment the counter. */
+function flip(to){ S.poss = to; }
+function newPassage(){ S.chain++; }
 function cnt(k){ var n=0; for(var i=0;i<S.log.length;i++) if(S.log[i].kpi===k) n++; return n; }
 
 function contest(zone, res){
-  snap(); S.zone = zone; S.pendingFree = null;
+  if(!guard()) return; snap(); S.zone = zone; S.pendingFree = null;
   if(res === 'W'){ flip('US');   emit(zone + ' \u2013 Contested Win'); }
   else           { flip('THEM'); emit(zone + ' \u2013 Contested Loss'); }
   render();
 }
 
 function free(res){
-  snap();
+  if(!guard()) return; snap();
+  newPassage();
   if(res === 'W'){ flip('US');   emit('Free Won');  S.pendingFree = 'US'; }
   else           { flip('THEM'); emit('Free Lost'); S.pendingFree = 'THEM'; }
   render();
 }
 
 function shot(side, kind){
-  snap();
+  if(!guard()) return; snap();
   var us = side === 'US';
   flip(us ? 'US' : 'THEM');
   if(kind === 'G'){ emit(us ? 'Goal \u2013 Us' : 'Goal \u2013 Them'); }
@@ -264,12 +328,12 @@ function shot(side, kind){
     var frm = (S.pendingFree === (us ? 'US' : 'THEM')) ? 'Free' : 'Play';
     emit((kind === 'P' ? 'Point \u2013 ' : 'Miss \u2013 ') + frm + ' ' + (us ? '(Us)' : '(Them)'));
   }
-  S.pendingFree = null; dead();
+  S.pendingFree = null;
   askPO(us ? 'THEM' : 'US');
   render();
 }
 
-function chance(){ snap(); S.zone='Attack'; flip('US'); emit('Goal Chance \u2013 Us'); render(); }
+function chance(){ if(!guard()) return; snap(); S.zone='Attack'; flip('US'); emit('Goal Chance \u2013 Us'); render(); }
 
 var poOwner = null;
 function askPO(owner){
@@ -290,9 +354,10 @@ function askPO(owner){
 }
 function takePO(res, len){
   var own = poOwner;
+  newPassage();
   S.poss = res==='W' ? 'US' : 'THEM';
   S.zone = len==='Long' ? 'Mid' : (own==='THEM' ? 'Attack' : 'Def');
-  S.chain++; S.pendingFree = null;
+  S.pendingFree = null;
   emit((own==='US' ? 'Our PO' : 'Their PO') + ' \u2013 ' + (res==='W' ? 'We Win' : 'We Lose') + ' \u2013 ' + len);
   closePO(); render();
 }
@@ -324,19 +389,73 @@ function render(){
   document.getElementById('dot').className = 'dot' + (S.poss==='THEM' ? ' t' : '');
   document.getElementById('stx').textContent =
     (S.poss==='US' ? 'we have it' : 'they have it') + ' \u00b7 ' + S.zone.toLowerCase() +
-    (S.pendingFree ? ' \u00b7 free pending' : '') + ' \u00b7 c' + S.chain;
+    (S.pendingFree ? ' \u00b7 free pending' : '') + ' \u00b7 p' + S.chain;
   var L = S.log[S.log.length-1];
   document.getElementById('last').textContent = L ? L.kpi : 'nothing logged';
-  document.getElementById('run').textContent = S.running ? 'Pause' : (ms() ? 'Resume' : 'Start');
-  document.getElementById('run').classList.toggle('on', S.running);
+  var F = {pre:['Start',0], h1:['End 1st',1], ht:['Start 2nd',0], h2:['End',1], ended:['Full time',0]}[S.flow];
+  var fb = document.getElementById('flow');
+  fb.textContent = F[0]; fb.classList.toggle('on', !!F[1]);
+  var pb = document.getElementById('pause');
+  pb.textContent = S.pausedAt && live() ? '\u25B6' : 'II';
+  pb.disabled = !live();
+  pb.style.opacity = live() ? 1 : .35;
 }
 function tick(){
   document.getElementById('clock').textContent = mmss(ms());
-  document.getElementById('qtr').textContent = 'Q'+qOf()+(S.running ? ' \u00b7 live' : ' \u00b7 paused');
+  var lbl = S.flow==='pre' ? 'Pre-match'
+          : S.flow==='ht'  ? 'Half time'
+          : S.flow==='ended' ? 'Full time'
+          : 'Q'+qOf()+(S.pausedAt ? ' \u00b7 paused' : ' \u00b7 live');
+  document.getElementById('qtr').textContent = lbl;
 }
 
-function save(){ try{ localStorage.setItem('sideline_v3', JSON.stringify(S)); }catch(e){} }
-function load(){ try{ var r=localStorage.getItem('sideline_v3'); if(r){ var p=JSON.parse(r); if(p&&p.log){ S=p; S.running=false; } } }catch(e){} }
+/* Storage: v2 warned the user when this failed. Silent failure loses a match. */
+var storageOK = true;
+function save(){
+  try{ localStorage.setItem('sideline_v3', JSON.stringify(S)); }
+  catch(e){
+    if(storageOK){ storageOK = false; document.getElementById('warn').style.display='block'; }
+  }
+}
+var FLOWS = ['pre','h1','ht','h2','ended'];
+function load(){
+  try{
+    var r = localStorage.getItem('sideline_v3');
+    if(!r) return;
+    var p = JSON.parse(r);
+    if(!p || !Array.isArray(p.log)) return;
+    if(FLOWS.indexOf(p.flow) === -1) return;                    // reject corrupt flow
+    for(var i=0;i<p.log.length;i++){
+      var e = p.log[i];
+      if(!e || typeof e.kpi !== 'string' || [1,2,3,4].indexOf(e.q) === -1) return;
+    }
+    S = p;
+    if(live() && !S.pausedAt) S.pausedAt = Date.now();          // resume paused, never mid-run
+  }catch(e){}
+}
+
+/* Flow: pre → h1 → ht → h2 → ended. The second half starts a fresh clock. */
+function flowNext(){
+  if(S.flow === 'pre'){  S.flow='h1'; S.hStart=Date.now(); S.hPaused=0; S.pausedAt=0; save(); render(); return; }
+  if(S.flow === 'h1'){   confirm2('End first half?', 'The clock stops and the second half will start from 00:00.', function(){
+                           S.flow='ht'; S.pausedAt=S.pausedAt||Date.now(); save(); render(); openStats(); }); return; }
+  if(S.flow === 'ht'){   S.flow='h2'; S.hStart=Date.now(); S.hPaused=0; S.pausedAt=0; save(); render(); return; }
+  if(S.flow === 'h2'){   confirm2('End the match?', 'No further events can be logged.', function(){
+                           S.flow='ended'; S.pausedAt=S.pausedAt||Date.now(); save(); render(); openStats(); }); return; }
+  if(S.flow === 'ended'){ openStats(); }
+}
+function togglePause(){
+  if(!live()){ toast('Only during play'); return; }
+  if(S.pausedAt){ S.hPaused += Date.now()-S.pausedAt; S.pausedAt=0; }
+  else { S.pausedAt = Date.now(); }
+  save(); render();
+}
+function confirm2(title, msg, yes){
+  document.getElementById('cf-t').textContent=title;
+  document.getElementById('cf-m').textContent=msg;
+  document.getElementById('cf').classList.add('on');
+  document.getElementById('cf-y').onclick=function(){ document.getElementById('cf').classList.remove('on'); yes(); };
+}
 
 function csv(){
   var q=function(s){ return '"'+String(s==null?'':s).replace(/"/g,'""')+'"'; };
@@ -348,7 +467,7 @@ function csv(){
   L.push('Date,'+q(S.meta.date));
   L.push('');
   L.push('Event Log,,,,,,');
-  L.push('Event,Quarter,MatchTime,Timestamp_ms,Possession,Zone,ChainID');
+  L.push('Event,Quarter,MatchTime,Timestamp_ms,Possession,Zone,PassageID');
   S.log.forEach(function(e){ L.push([q(e.kpi),e.q,q(e.time),e.ts,e.poss,e.zone,e.chain].join(',')); });
   L.push('');
   L.push('KPI Summary,,,,,');
@@ -360,12 +479,117 @@ function csv(){
     });
     L.push(q(k)+','+qq.join(',')+','+(qq[0]+qq[1]+qq[2]+qq[3]));
   });
-  var b=new Blob([L.join('\n')],{type:'text/csv;charset=utf-8;'});
-  var a=document.createElement('a');
-  a.href=URL.createObjectURL(b);
-  a.download='gaa_'+String(S.meta.them).replace(/\W+/g,'_')+'_'+String(S.meta.date).replace(/\W+/g,'_')+'.csv';
-  a.click();
-  toast(S.log.length+' events \u00b7 KPI summary included');
+  var str = L.join('\n');
+  var fn = 'gaa_'+String(S.meta.them).replace(/\W+/g,'_')+'_'+String(S.meta.date).replace(/\W+/g,'_')+'.csv';
+
+  /* iOS standalone PWAs silently drop a.download. Web Share is the only
+     reliable way off the phone — this is exactly what v2 did. */
+  if(navigator.share && navigator.canShare){
+    try{
+      var file = new File([str], fn, {type:'text/csv'});
+      if(navigator.canShare({files:[file]})){
+        navigator.share({files:[file], title:'GAA Stats'})
+          .then(function(){ toast(S.log.length+' events shared'); })
+          .catch(function(){ dl(str, fn); });
+        return;
+      }
+    }catch(e){}
+  }
+  dl(str, fn);
+}
+function dl(str, fn){
+  try{
+    var b=new Blob([str],{type:'text/csv;charset=utf-8;'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(b); a.download=fn;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    toast(S.log.length+' events \u00b7 KPI summary included');
+  }catch(e){ toast('Export failed \u2014 screenshot the stats screen'); }
+}
+
+
+/* ── Live readings — the half-time tool. Same maths as HANDOVER_Match_Report.md:
+      ball share = contested wins + puck-out wins over contested + puck-outs.
+      expected   = 50 + 2 x (ball - 52).   Cashing-In = shot share - expected. ── */
+function cq(k, qs){ var n=0; for(var i=0;i<S.log.length;i++) if(S.log[i].kpi===k && qs.indexOf(S.log[i].q)>-1) n++; return n; }
+function pc(w,l){ return (w+l) ? Math.round(100*w/(w+l)) : null; }
+function fmt(v){ return v===null ? '\u2014' : v+'%'; }
+
+function readings(qs){
+  var c=function(k){ return cq(k,qs); };
+  var olw=c('Our PO \u2013 We Win \u2013 Long'),  oll=c('Our PO \u2013 We Lose \u2013 Long');
+  var ows=c('Our PO \u2013 We Win \u2013 Short'), ols=c('Our PO \u2013 We Lose \u2013 Short');
+  var tlw=c('Their PO \u2013 We Win \u2013 Long'),  tll=c('Their PO \u2013 We Lose \u2013 Long');
+  var tws=c('Their PO \u2013 We Win \u2013 Short'), tls=c('Their PO \u2013 We Lose \u2013 Short');
+  var Z=['Attack','Mid','Def'];
+  var cw=0, cl=0, zone={};
+  Z.forEach(function(z){
+    var w=c(z+' \u2013 Contested Win'), l=c(z+' \u2013 Contested Loss');
+    cw+=w; cl+=l; zone[z]=[w,l];
+  });
+  var fw=c('Free Won'), fl=c('Free Lost');
+  var bw=cw+olw+ows+tlw+tws, bl=cl+oll+ols+tll+tls;
+  var ball = (bw+bl) ? 100*bw/(bw+bl) : 52;
+  var su=c('Point \u2013 Play (Us)')+c('Miss \u2013 Play (Us)')+c('Point \u2013 Free (Us)')+c('Miss \u2013 Free (Us)')+c('Goal \u2013 Us')+c('Goal Chance \u2013 Us');
+  var st=c('Point \u2013 Play (Them)')+c('Miss \u2013 Play (Them)')+c('Point \u2013 Free (Them)')+c('Miss \u2013 Free (Them)')+c('Goal \u2013 Them');
+  var ss = (su+st) ? 100*su/(su+st) : 50;
+  var exp = 50 + 2*(ball-52);
+  var pp=c('Point \u2013 Play (Us)'), mp=c('Miss \u2013 Play (Us)');
+  return {olw:olw, oll:oll, po:pc(olw,oll), cw:cw, cl:cl, cb:pc(cw,cl),
+          tlw:tlw, tll:tll, steal:pc(tlw,tll), fw:fw, fl:fl, ga:c('Goal \u2013 Them'),
+          zone:zone, play:pc(pp,mp), pps:pp+mp,
+          ball:Math.round(ball), ss:Math.round(ss), exp:Math.round(exp),
+          ci:Math.round(ss-exp), su:su, st:st};
+}
+
+function light(ok, near){ return ok ? '\u{1F7E2}' : (near ? '\u{1F7E1}' : '\u{1F534}'); }
+
+function openStats(){
+  var H1=readings([1,2]), H2=readings([3,4]), F=readings([1,2,3,4]);
+  var showH2 = S.flow==='h2' || S.flow==='ended';
+  var cols = showH2 ? [['1st',H1],['2nd',H2],['Full',F]] : [['1st half',H1]];
+
+  var rows = [
+    ['Our long puck-out','55%+', function(r){ return r.po===null?'\u2014':light(r.po>=55, r.po>=48)+' '+r.po+'% ('+r.olw+'W '+r.oll+'L)'; }],
+    ['Contested ball','50%+',    function(r){ return r.cb===null?'\u2014':light(r.cb>=50, r.cb>=45)+' '+r.cb+'% ('+r.cw+'W '+r.cl+'L)'; }],
+    ['Frees','0+',               function(r){ var n=r.fw-r.fl; return light(n>=0, n>=-1)+' '+(n>0?'+':'')+n+' ('+r.fw+'W '+r.fl+'L)'; }],
+    ['Goals against','\u22641/half', function(r){ return light(r.ga<=1, r.ga<=2)+' '+r.ga; }],
+    ['\u{1F3AF} Steal their long','50%+', function(r){ return r.steal===null?'\u2014':light(r.steal>=50, r.steal>=45)+' '+r.steal+'% ('+r.tlw+'W '+r.tll+'L)'; }],
+    ['SEP','',null],
+    ['Our shooting (play)','\u2014', function(r){ return r.play===null?'\u2014':(r.play>=70?'\u{1F525} ':r.play<55?'\u2744\uFE0F ':'')+r.play+'% ('+r.pps+' sh)'; }],
+    ['Shots','\u2014',          function(r){ return r.su+' v '+r.st; }],
+    ['Ball share','\u2014',     function(r){ return r.ball+'%'; }],
+    ['Shot share (exp)','\u2014', function(r){ return r.ss+'% ('+r.exp+'%)'; }],
+    ['Cashing In','0+',          function(r){ return light(r.ci>=0, r.ci>=-3)+' '+(r.ci>0?'+':'')+r.ci; }],
+    ['SEP','',null],
+    ['Attack contested','50%+',  function(r){ var z=r.zone.Attack; return fmt(pc(z[0],z[1]))+' ('+z[0]+'W '+z[1]+'L)'; }],
+    ['Mid contested','50%+',     function(r){ var z=r.zone.Mid;    return fmt(pc(z[0],z[1]))+' ('+z[0]+'W '+z[1]+'L)'; }],
+    ['Def contested','50%+',     function(r){ var z=r.zone.Def;    return fmt(pc(z[0],z[1]))+' ('+z[0]+'W '+z[1]+'L)'; }]
+  ];
+
+  var h = '<table class="rt"><thead><tr><th>Reading</th><th>Target</th>';
+  cols.forEach(function(c){ h += '<th>'+c[0]+'</th>'; });
+  h += '</tr></thead><tbody>';
+  rows.forEach(function(r){
+    if(r[0]==='SEP'){ h += '<tr class="sp"><td colspan="'+(2+cols.length)+'"></td></tr>'; return; }
+    h += '<tr><td>'+r[0]+'</td><td class="tg">'+r[1]+'</td>';
+    cols.forEach(function(c){ h += '<td class="vv">'+r[2](c[1])+'</td>'; });
+    h += '</tr>';
+  });
+  h += '</tbody></table>';
+
+  // pillars passed, the line the coach hears
+  var p = 0;
+  if(H1.po!==null && H1.po>=55) p++;
+  if(H1.cb!==null && H1.cb>=50) p++;
+  if((H1.fw-H1.fl)>=0) p++;
+  if(H1.ga<=1) p++;
+  if(H1.steal!==null && H1.steal>=50) p++;
+  var r0 = showH2 ? F : H1;
+  h += '<div class="pil">'+p+' of 5 pillars \u00b7 Cashing-In '+(r0.ci>0?'+':'')+r0.ci+'</div>';
+
+  document.getElementById('sc-body').innerHTML = h;
+  document.getElementById('stats').classList.add('on');
 }
 
 var tt;
@@ -380,11 +604,12 @@ document.querySelectorAll('[data-s]').forEach(function(b){
   var p=b.dataset.s.split('|'); b.onclick=function(){ shot(p[0],p[1]); };
 });
 document.querySelector('[data-gc]').onclick = chance;
-document.getElementById('run').onclick=function(){
-  if(S.running){ S.elapsed=ms(); S.running=false; } else { S.started=Date.now(); S.running=true; }
-  save(); render();
-};
-document.getElementById('undo').onclick=undo;
+document.getElementById('flow').onclick  = flowNext;
+document.getElementById('pause').onclick = togglePause;
+document.getElementById('stat').onclick  = openStats;
+document.getElementById('sc-x').onclick  = function(){ document.getElementById('stats').classList.remove('on'); };
+document.getElementById('cf-n').onclick  = function(){ document.getElementById('cf').classList.remove('on'); };
+document.getElementById('undo').onclick  = undo;
 document.getElementById('csv').onclick=csv;
 document.getElementById('po-s').onclick=function(){ closePO(); toast('Puck-out skipped'); };
 document.getElementById('m-go').onclick=function(){
