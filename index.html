@@ -102,9 +102,9 @@ header{padding:7px 2px 8px}
 .rt td.tg{color:var(--dim);font-size:11px;white-space:nowrap}
 .rt td.vv{font-variant-numeric:tabular-nums;white-space:nowrap}
 .rt tr.sp td{padding:3px;border:0}
-.pil{margin-top:11px;padding:9px;border:1px solid var(--line);border-radius:var(--r);text-align:center;
-  font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:600;letter-spacing:.09em;
-  text-transform:uppercase}
+.rt tr.gh td{padding:11px 5px 4px;font-family:'Barlow Condensed',sans-serif;font-size:11px;
+  font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:#4E6157;
+  border-bottom:1px solid var(--line)}
 </style>
 </head>
 <body>
@@ -154,6 +154,12 @@ header{padding:7px 2px 8px}
   <button class="b t" data-f="L">To them<span class="n" id="n-FL">0</span></button>
 </div>
 
+<div class="grid">
+  <div class="rl">65</div>
+  <button class="b u" data-six="US">To us<span class="n" id="n-65U">0</span></button>
+  <button class="b t" data-six="THEM">To them<span class="n" id="n-65T">0</span></button>
+</div>
+
 <hr class="sep">
 
 <div class="cols">
@@ -176,7 +182,8 @@ header{padding:7px 2px 8px}
 
 <div class="grid">
   <div class="rl">Chance</div>
-  <button class="b g" data-gc="1" style="grid-column:span 2">Goal chance — us<span class="n" id="n-GC">0</span></button>
+  <button class="b g" data-gc="US">Us<span class="n" id="n-GC">0</span></button>
+  <button class="b t" data-gc="THEM">Them<span class="n" id="n-GCT">0</span></button>
 </div>
 
 <div class="st">
@@ -248,14 +255,14 @@ header{padding:7px 2px 8px}
    ───────────────────────────────────────────────────────────── */
 
 var KPIS = [
- 'Point – Play (Us)','Miss – Play (Us)','Point – Free (Us)','Miss – Free (Us)','Goal – Us','Goal Chance – Us',
- 'Point – Play (Them)','Miss – Play (Them)','Point – Free (Them)','Miss – Free (Them)','Goal – Them',
+ 'Point – Play (Us)','Miss – Play (Us)','Point – Free (Us)','Miss – Free (Us)','Point – 65 (Us)','Miss – 65 (Us)','Goal – Us','Goal Chance – Us',
+ 'Point – Play (Them)','Miss – Play (Them)','Point – Free (Them)','Miss – Free (Them)','Point – 65 (Them)','Miss – 65 (Them)','Goal – Them','Goal Chance – Them',
  'Our PO – We Win – Short','Our PO – We Win – Long','Our PO – We Lose – Short','Our PO – We Lose – Long',
  'Their PO – We Win – Short','Their PO – We Win – Long','Their PO – We Lose – Short','Their PO – We Lose – Long',
  'Attack – Favorable Pass','Attack – Run Thru 45','Attack – Contested Win','Attack – Contested Loss','Attack – Unforced Turnover',
  'Mid – Favorable','Mid – Contested Win','Mid – Contested Loss','Mid – Unforced Loss','Mid – Reset',
  'Def – Opp Favorable','Def – Contested Win','Def – Contested Loss','Def – Opp Unforced Turnover',
- 'Free Won','Free Lost','Card for Us','Turnover Won','T/O Forced (Them)','Unforced Win (Them)'
+ 'Free Won','Free Lost','65 – Us','65 – Them','Card for Us','Turnover Won','T/O Forced (Them)','Unforced Win (Them)'
 ];
 
 var S = {
@@ -319,13 +326,24 @@ function free(res){
   render();
 }
 
+function sixtyfive(side){
+  if(!guard()) return; snap();
+  newPassage();
+  var us = side === 'US';
+  flip(us ? 'US' : 'THEM');
+  emit(us ? '65 \u2013 Us' : '65 \u2013 Them');
+  S.pendingFree = us ? 'US65' : 'THEM65';
+  render();
+}
+
 function shot(side, kind){
   if(!guard()) return; snap();
   var us = side === 'US';
   flip(us ? 'US' : 'THEM');
   if(kind === 'G'){ emit(us ? 'Goal \u2013 Us' : 'Goal \u2013 Them'); }
   else {
-    var frm = (S.pendingFree === (us ? 'US' : 'THEM')) ? 'Free' : 'Play';
+    var sd = us ? 'US' : 'THEM';
+    var frm = (S.pendingFree === sd) ? 'Free' : (S.pendingFree === sd+'65') ? '65' : 'Play';
     emit((kind === 'P' ? 'Point \u2013 ' : 'Miss \u2013 ') + frm + ' ' + (us ? '(Us)' : '(Them)'));
   }
   S.pendingFree = null;
@@ -333,7 +351,7 @@ function shot(side, kind){
   render();
 }
 
-function chance(){ if(!guard()) return; snap(); S.zone='Attack'; flip('US'); emit('Goal Chance \u2013 Us'); render(); }
+function chance(side){ if(!guard()) return; snap(); var us=side==='US'; flip(us?'US':'THEM'); S.zone=us?'Attack':'Def'; emit(us?'Goal Chance \u2013 Us':'Goal Chance \u2013 Them'); render(); }
 
 var poOwner = null;
 function askPO(owner){
@@ -372,8 +390,8 @@ function undo(){
 
 function render(){
   var gu=cnt('Goal \u2013 Us'), gt=cnt('Goal \u2013 Them');
-  var pu=cnt('Point \u2013 Play (Us)')+cnt('Point \u2013 Free (Us)');
-  var pt=cnt('Point \u2013 Play (Them)')+cnt('Point \u2013 Free (Them)');
+  var pu=cnt('Point \u2013 Play (Us)')+cnt('Point \u2013 Free (Us)')+cnt('Point \u2013 65 (Us)');
+  var pt=cnt('Point \u2013 Play (Them)')+cnt('Point \u2013 Free (Them)')+cnt('Point \u2013 65 (Them)');
   document.getElementById('su').textContent = gu+'-'+String(pu).padStart(2,'0');
   document.getElementById('st').textContent = gt+'-'+String(pt).padStart(2,'0');
   var m = (gu*3+pu)-(gt*3+pt);
@@ -383,13 +401,14 @@ function render(){
   var ids = {'n-AW':'Attack \u2013 Contested Win','n-AL':'Attack \u2013 Contested Loss',
              'n-MW':'Mid \u2013 Contested Win','n-ML':'Mid \u2013 Contested Loss',
              'n-DW':'Def \u2013 Contested Win','n-DL':'Def \u2013 Contested Loss',
-             'n-FW':'Free Won','n-FL':'Free Lost','n-GC':'Goal Chance \u2013 Us'};
+             'n-FW':'Free Won','n-FL':'Free Lost','n-GC':'Goal Chance \u2013 Us','n-GCT':'Goal Chance \u2013 Them',
+             'n-65U':'65 \u2013 Us','n-65T':'65 \u2013 Them'};
   for(var id in ids) document.getElementById(id).textContent = cnt(ids[id]);
 
   document.getElementById('dot').className = 'dot' + (S.poss==='THEM' ? ' t' : '');
   document.getElementById('stx').textContent =
     (S.poss==='US' ? 'we have it' : 'they have it') + ' \u00b7 ' + S.zone.toLowerCase() +
-    (S.pendingFree ? ' \u00b7 free pending' : '') + ' \u00b7 p' + S.chain;
+    (S.pendingFree ? (String(S.pendingFree).slice(-2)==='65' ? ' \u00b7 65 pending' : ' \u00b7 free pending') : '') + ' \u00b7 p' + S.chain;
   var L = S.log[S.log.length-1];
   document.getElementById('last').textContent = L ? L.kpi : 'nothing logged';
   var F = {pre:['Start',0], h1:['End 1st',1], ht:['Start 2nd',0], h2:['End',1], ended:['Full time',0]}[S.flow];
@@ -530,14 +549,19 @@ function readings(qs){
   var fw=c('Free Won'), fl=c('Free Lost');
   var bw=cw+olw+ows+tlw+tws, bl=cl+oll+ols+tll+tls;
   var ball = (bw+bl) ? 100*bw/(bw+bl) : 52;
-  var su=c('Point \u2013 Play (Us)')+c('Miss \u2013 Play (Us)')+c('Point \u2013 Free (Us)')+c('Miss \u2013 Free (Us)')+c('Goal \u2013 Us')+c('Goal Chance \u2013 Us');
-  var st=c('Point \u2013 Play (Them)')+c('Miss \u2013 Play (Them)')+c('Point \u2013 Free (Them)')+c('Miss \u2013 Free (Them)')+c('Goal \u2013 Them');
+  var su=c('Point \u2013 Play (Us)')+c('Miss \u2013 Play (Us)')+c('Point \u2013 Free (Us)')+c('Miss \u2013 Free (Us)')+c('Point \u2013 65 (Us)')+c('Miss \u2013 65 (Us)')+c('Goal \u2013 Us')+c('Goal Chance \u2013 Us');
+  var st=c('Point \u2013 Play (Them)')+c('Miss \u2013 Play (Them)')+c('Point \u2013 Free (Them)')+c('Miss \u2013 Free (Them)')+c('Point \u2013 65 (Them)')+c('Miss \u2013 65 (Them)')+c('Goal \u2013 Them')+c('Goal Chance \u2013 Them');
   var ss = (su+st) ? 100*su/(su+st) : 50;
   var exp = 50 + 2*(ball-52);
-  var pp=c('Point \u2013 Play (Us)'), mp=c('Miss \u2013 Play (Us)');
+  var pp=c('Point \u2013 Play (Us)'),  mp=c('Miss \u2013 Play (Us)');
+  var tpp=c('Point \u2013 Play (Them)'), tmp=c('Miss \u2013 Play (Them)');
+  var gu=c('Goal \u2013 Us'), gt=c('Goal \u2013 Them');
+  var upts=pp+c('Point \u2013 Free (Us)')+c('Point \u2013 65 (Us)');            // scoreboard points, us  (play + free + 65)
+  var tpts=tpp+c('Point \u2013 Free (Them)')+c('Point \u2013 65 (Them)');       // scoreboard points, them
   return {olw:olw, oll:oll, po:pc(olw,oll), cw:cw, cl:cl, cb:pc(cw,cl),
-          tlw:tlw, tll:tll, steal:pc(tlw,tll), fw:fw, fl:fl, ga:c('Goal \u2013 Them'),
-          zone:zone, play:pc(pp,mp), pps:pp+mp,
+          tlw:tlw, tll:tll, steal:pc(tlw,tll), fw:fw, fl:fl, ga:gt,
+          zone:zone, play:pc(pp,mp), pps:pp+mp, tplay:pc(tpp,tmp), tpps:tpp+tmp,
+          gu:gu, upts:upts, gt:gt, tpts:tpts, gc:c('Goal Chance \u2013 Us'),
           ball:Math.round(ball), ss:Math.round(ss), exp:Math.round(exp),
           ci:Math.round(ss-exp), su:su, st:st};
 }
@@ -549,22 +573,26 @@ function openStats(){
   var showH2 = S.flow==='h2' || S.flow==='ended';
   var cols = showH2 ? [['1st',H1],['2nd',H2],['Full',F]] : [['1st half',H1]];
 
+  var shoot = function(v){ return v===null ? '\u2014' : (v>=70?'\u{1F525} ':v<55?'\u2744\uFE0F ':'')+v+'%'; };
   var rows = [
+    ['GRP','Win the ball',null],
     ['Our long puck-out','55%+', function(r){ return r.po===null?'\u2014':light(r.po>=55, r.po>=48)+' '+r.po+'% ('+r.olw+'W '+r.oll+'L)'; }],
-    ['Contested ball','50%+',    function(r){ return r.cb===null?'\u2014':light(r.cb>=50, r.cb>=45)+' '+r.cb+'% ('+r.cw+'W '+r.cl+'L)'; }],
-    ['Frees','0+',               function(r){ var n=r.fw-r.fl; return light(n>=0, n>=-1)+' '+(n>0?'+':'')+n+' ('+r.fw+'W '+r.fl+'L)'; }],
-    ['Goals against','\u22641/half', function(r){ return light(r.ga<=1, r.ga<=2)+' '+r.ga; }],
     ['\u{1F3AF} Steal their long','50%+', function(r){ return r.steal===null?'\u2014':light(r.steal>=50, r.steal>=45)+' '+r.steal+'% ('+r.tlw+'W '+r.tll+'L)'; }],
-    ['SEP','',null],
-    ['Our shooting (play)','\u2014', function(r){ return r.play===null?'\u2014':(r.play>=70?'\u{1F525} ':r.play<55?'\u2744\uFE0F ':'')+r.play+'% ('+r.pps+' sh)'; }],
-    ['Shots','\u2014',          function(r){ return r.su+' v '+r.st; }],
-    ['Ball share','\u2014',     function(r){ return r.ball+'%'; }],
-    ['Shot share (exp)','\u2014', function(r){ return r.ss+'% ('+r.exp+'%)'; }],
-    ['Cashing In','0+',          function(r){ return light(r.ci>=0, r.ci>=-3)+' '+(r.ci>0?'+':'')+r.ci; }],
-    ['SEP','',null],
+    ['Contested ball','50%+',    function(r){ return r.cb===null?'\u2014':light(r.cb>=50, r.cb>=45)+' '+r.cb+'% ('+r.cw+'W '+r.cl+'L)'; }],
     ['Attack contested','50%+',  function(r){ var z=r.zone.Attack; return fmt(pc(z[0],z[1]))+' ('+z[0]+'W '+z[1]+'L)'; }],
     ['Mid contested','50%+',     function(r){ var z=r.zone.Mid;    return fmt(pc(z[0],z[1]))+' ('+z[0]+'W '+z[1]+'L)'; }],
-    ['Def contested','50%+',     function(r){ var z=r.zone.Def;    return fmt(pc(z[0],z[1]))+' ('+z[0]+'W '+z[1]+'L)'; }]
+    ['Def contested','50%+',     function(r){ var z=r.zone.Def;    return fmt(pc(z[0],z[1]))+' ('+z[0]+'W '+z[1]+'L)'; }],
+    ['Ball share','\u2014',      function(r){ return r.ball+'%'; }],
+    ['GRP','Shots \u0026 scores',null],
+    ['Shot share (exp)','\u2014', function(r){ return r.ss+'% ('+r.exp+'%)'; }],
+    ['Shots (us v them)','\u2014', function(r){ return r.su+' v '+r.st; }],
+    ['Scores (us v them)','\u2014', function(r){ return (r.gu+r.upts)+' v '+(r.gt+r.tpts); }],
+    ['Shooting play (us v them)','\u2014', function(r){ return shoot(r.play)+' v '+shoot(r.tplay); }],
+    ['GRP','Frees',null],
+    ['Frees (won \u2212 lost)','0+', function(r){ var n=r.fw-r.fl; return light(n>=0, n>=-1)+' '+(n>0?'+':'')+n+' ('+r.fw+'W '+r.fl+'L)'; }],
+    ['GRP','Goals',null],
+    ['Goals against','\u22641/half', function(r){ return light(r.ga<=1, r.ga<=2)+' '+r.ga; }],
+    ['Our goal chances','\u2014', function(r){ return ''+r.gc; }]
   ];
 
   var h = '<table class="rt"><thead><tr><th>Reading</th><th>Target</th>';
@@ -572,21 +600,12 @@ function openStats(){
   h += '</tr></thead><tbody>';
   rows.forEach(function(r){
     if(r[0]==='SEP'){ h += '<tr class="sp"><td colspan="'+(2+cols.length)+'"></td></tr>'; return; }
+    if(r[0]==='GRP'){ h += '<tr class="gh"><td colspan="'+(2+cols.length)+'">'+r[1]+'</td></tr>'; return; }
     h += '<tr><td>'+r[0]+'</td><td class="tg">'+r[1]+'</td>';
     cols.forEach(function(c){ h += '<td class="vv">'+r[2](c[1])+'</td>'; });
     h += '</tr>';
   });
   h += '</tbody></table>';
-
-  // pillars passed, the line the coach hears
-  var p = 0;
-  if(H1.po!==null && H1.po>=55) p++;
-  if(H1.cb!==null && H1.cb>=50) p++;
-  if((H1.fw-H1.fl)>=0) p++;
-  if(H1.ga<=1) p++;
-  if(H1.steal!==null && H1.steal>=50) p++;
-  var r0 = showH2 ? F : H1;
-  h += '<div class="pil">'+p+' of 5 pillars \u00b7 Cashing-In '+(r0.ci>0?'+':'')+r0.ci+'</div>';
 
   document.getElementById('sc-body').innerHTML = h;
   document.getElementById('stats').classList.add('on');
@@ -600,10 +619,11 @@ document.querySelectorAll('[data-c]').forEach(function(b){
   var p=b.dataset.c.split('|'); b.onclick=function(){ contest(p[0],p[1]); };
 });
 document.querySelectorAll('[data-f]').forEach(function(b){ b.onclick=function(){ free(b.dataset.f); }; });
+document.querySelectorAll('[data-six]').forEach(function(b){ b.onclick=function(){ sixtyfive(b.dataset.six); }; });
 document.querySelectorAll('[data-s]').forEach(function(b){
   var p=b.dataset.s.split('|'); b.onclick=function(){ shot(p[0],p[1]); };
 });
-document.querySelector('[data-gc]').onclick = chance;
+document.querySelectorAll('[data-gc]').forEach(function(b){ b.onclick=function(){ chance(b.dataset.gc); }; });
 document.getElementById('flow').onclick  = flowNext;
 document.getElementById('pause').onclick = togglePause;
 document.getElementById('stat').onclick  = openStats;
