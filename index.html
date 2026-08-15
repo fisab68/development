@@ -1,649 +1,1473 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<meta name="theme-color" content="#0B100D">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Sideline — Ballinora</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<meta name="apple-mobile-web-app-title" content="GAA Stats">
+<meta name="referrer" content="no-referrer">
+<title>GAA Stats v3</title>
 <style>
 :root{
-  --ground:#0B100D; --surface:#161E19; --line:#2E3D34;
-  --chalk:#E9EFEA; --dim:#7C8C82;
-  --us:#3DD68C; --us-bg:#0E3D28; --us-br:#1F6B48; --us-tx:#BFF3D9;
-  --them:#FF5A52; --them-bg:#48120F; --them-br:#7A2621; --them-tx:#FFC9C5;
-  --gold:#F0B429; --gold-bg:#4A3406; --gold-br:#6B5312; --gold-tx:#F7DFA4;
-  --r:9px;
+  --bg:#0a0e1a;--surface:#111827;--surface2:#1a2235;
+  --border:#1e2d45;--text:#e8eef8;--text-dim:#9baabf;
+  --accent:#00d4ff;--green:#00e676;--red:#ff3d5a;
+  --amber:#ffab40;--purple:#b388ff;
+  --r:12px;--r-sm:8px;
+  --font-display:'Arial Narrow','Arial Black',Arial,sans-serif;
+  --font-body:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;
 }
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
-html,body{height:100%;overscroll-behavior:none}
-body{background:var(--ground);color:var(--chalk);font-family:'Barlow',system-ui,sans-serif;
-  padding:env(safe-area-inset-top) 9px calc(env(safe-area-inset-bottom) + 6px);
-  max-width:520px;margin:0 auto;user-select:none;-webkit-user-select:none}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-family:var(--font-body);overflow:hidden;user-select:none;-webkit-user-select:none;}
 
-header{padding:7px 2px 8px}
-.hrow{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.clock{font-family:'Barlow Condensed',sans-serif;font-size:27px;font-weight:700;line-height:1;
-  font-variant-numeric:tabular-nums}
-.qtr{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:.14em;
-  color:var(--dim);text-transform:uppercase}
-.hb{background:transparent;border:1px solid var(--line);color:var(--dim);border-radius:var(--r);
-  font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:.08em;
-  text-transform:uppercase;padding:6px 10px;min-height:34px}
-.hb:active{background:var(--line)}
-.hb.on{border-color:var(--gold);color:var(--gold)}
-.score{display:flex;align-items:center;gap:8px;margin-top:7px;background:var(--surface);
-  border-radius:var(--r);padding:8px 11px}
-.sd{flex:1;min-width:0}
-.sd .l{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:600;letter-spacing:.15em;
-  text-transform:uppercase;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sd .v{font-family:'Barlow Condensed',sans-serif;font-size:25px;font-weight:700;line-height:1.05;
-  font-variant-numeric:tabular-nums}
-.sd.u .v{color:var(--us)} .sd.t .v,.sd.t .l{text-align:right} .sd.t .v{color:var(--them)}
-.mg{font-family:'Barlow Condensed',sans-serif;font-size:12px;color:var(--dim);
-  font-variant-numeric:tabular-nums;letter-spacing:.08em}
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;transition:transform .3s cubic-bezier(.4,0,.2,1);}
+#screen-meta{z-index:300;background:var(--bg);transform:translateX(0);}
+#screen-main{z-index:100;background:var(--bg);transform:translateX(0);}
+#screen-stats{z-index:200;background:var(--bg);transform:translateX(100%);}
+#screen-meta.hidden{transform:translateX(-100%);}
+#screen-stats.open{transform:translateX(0);}
 
-.cols{display:grid;grid-template-columns:46px 1fr 1fr;gap:6px;margin:12px 0 5px;padding:0 2px}
-.ch{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:.15em;
-  text-transform:uppercase;text-align:center}
-.ch.u{color:var(--us)} .ch.t{color:var(--them)}
+.meta-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:24px;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.meta-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px 24px 24px;width:100%;max-width:420px;display:flex;flex-direction:column;gap:18px;}
+.meta-box h2{font-family:var(--font-display);font-size:26px;font-weight:900;letter-spacing:3px;color:var(--accent);text-align:center;}
+.meta-box p{font-size:12px;color:var(--text-dim);text-align:center;margin-top:-10px;}
+.mf{display:flex;flex-direction:column;gap:6px;}
+.mf label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);}
+.mf input{background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-sm);color:var(--text);font-family:var(--font-body);font-size:16px;font-weight:600;padding:12px 14px;outline:none;transition:border-color .2s;-webkit-user-select:text;user-select:text;-webkit-appearance:none;appearance:none;}
+.mf input:focus{border-color:var(--accent);}
+.mf input::placeholder{color:var(--text-dim);opacity:.5;}
+.mf input[readonly]{opacity:.55;}
+#meta-start{width:100%;padding:16px;background:linear-gradient(135deg,rgba(0,212,255,.2),rgba(0,230,118,.15));border:1.5px solid var(--accent);border-radius:var(--r-sm);color:var(--accent);font-size:14px;font-weight:900;letter-spacing:2px;text-transform:uppercase;cursor:pointer;-webkit-appearance:none;appearance:none;}
 
-.grid{display:grid;grid-template-columns:46px 1fr 1fr;gap:6px;margin-bottom:6px}
-.rl{display:flex;align-items:center;justify-content:flex-end;padding-right:2px;
-  font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:.1em;
-  text-transform:uppercase;color:var(--dim)}
-.b{border:1px solid var(--line);background:var(--surface);color:var(--chalk);border-radius:var(--r);
-  min-height:52px;display:flex;align-items:center;justify-content:center;
-  font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:16px;letter-spacing:.07em;
-  text-transform:uppercase;line-height:1.05;padding:5px 4px;text-align:center}
-.b:active{transform:scale(.97);filter:brightness(1.35)}
-.b.u{border-color:var(--us-br);background:var(--us-bg);color:var(--us-tx)}
-.b.t{border-color:var(--them-br);background:var(--them-bg);color:var(--them-tx)}
-.b.g{border-color:var(--gold-br);background:var(--gold-bg);color:var(--gold-tx)}
-.b .n{font-size:11px;opacity:.55;margin-left:5px;font-variant-numeric:tabular-nums}
-.sep{height:1px;background:var(--line);margin:11px 0 9px;border:0}
+#confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:500;align-items:center;justify-content:center;padding:24px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);}
+#confirm-overlay.show{display:flex;}
+.cfm-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px 24px;max-width:340px;width:100%;text-align:center;}
+.cfm-box h3{font-family:var(--font-display);font-size:24px;font-weight:900;letter-spacing:2px;margin-bottom:10px;}
+.cfm-box p{font-size:14px;color:var(--text-dim);line-height:1.5;margin-bottom:22px;}
+.cfm-btns{display:flex;gap:10px;}
+.cfm-btns button{flex:1;padding:14px;border-radius:var(--r-sm);font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border:1.5px solid;-webkit-appearance:none;appearance:none;}
+#cfm-yes{background:var(--red);border-color:var(--red);color:#fff;}
+#cfm-yes.pos{background:var(--green);border-color:var(--green);color:#000;}
+#cfm-no{background:var(--surface2);border-color:var(--border);color:var(--text);}
 
-.st{display:flex;align-items:center;gap:7px;margin-top:9px;padding:0 2px;min-height:20px;
-  font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:.09em;text-transform:uppercase;
-  color:var(--dim)}
-.dot{width:9px;height:9px;border-radius:50%;flex:none;background:var(--us)}
-.dot.t{background:var(--them)}
-.st .last{margin-left:auto;font-family:'Barlow',sans-serif;text-transform:none;letter-spacing:0;
-  font-size:12px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#sub-overlay{display:none;position:fixed;inset:0;z-index:350;background:rgba(0,0,0,.55);}
+#sub-overlay.show{display:block;}
+.sub-panel{
+  position:absolute;bottom:0;left:0;right:0;
+  background:var(--surface);
+  border-top:1.5px solid var(--border);
+  border-radius:20px 20px 0 0;
+  padding:12px 12px calc(16px + env(safe-area-inset-bottom,0px));
+  display:flex;flex-direction:column;gap:8px;
+  box-shadow:0 -8px 32px rgba(0,0,0,.5);
+  max-height:70vh;
+}
+.sub-sheet-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 4px 6px;border-bottom:1px solid var(--border);margin-bottom:2px;
+}
+.sub-sheet-title{font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);}
+.sub-sheet-cancel{font-size:12px;font-weight:700;color:var(--text-dim);padding:4px 8px;cursor:pointer;}
+.sub-grid{display:grid;gap:6px;}
+.sub-grid.g2{grid-template-columns:1fr 1fr;}
+.sub-grid.g3{grid-template-columns:1fr 1fr 1fr;}
+.sub-btn{
+  padding:16px 10px;
+  border-radius:14px;
+  font-family:var(--font-display);
+  font-size:15px;
+  font-weight:900;
+  letter-spacing:.5px;
+  text-transform:uppercase;
+  cursor:pointer;
+  border:1.5px solid;
+  text-align:center;
+  -webkit-appearance:none;appearance:none;
+  -webkit-touch-callout:none;
+  touch-action:manipulation;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  position:relative;
+}
+.sub-btn .sb-count{font-family:var(--font-display);font-size:28px;font-weight:900;line-height:1;}
+.sub-btn .sb-label{font-size:10px;font-weight:700;letter-spacing:.3px;line-height:1.2;}
+.sub-btn.green{background:rgba(0,230,118,.12);border-color:rgba(0,230,118,.45);color:#00e676;}
+.sub-btn.green:active{background:rgba(0,230,118,.25);}
+.sub-btn.amber{background:rgba(255,171,64,.12);border-color:rgba(255,171,64,.45);color:#ffab40;}
+.sub-btn.amber:active{background:rgba(255,171,64,.25);}
+.sub-btn.purple{background:rgba(179,136,255,.12);border-color:rgba(179,136,255,.45);color:#b388ff;}
+.sub-btn.purple:active{background:rgba(179,136,255,.25);}
+.sub-btn.red{background:rgba(255,61,90,.12);border-color:rgba(255,61,90,.45);color:#ff3d5a;}
+.sub-btn.red:active{background:rgba(255,61,90,.25);}
+.sub-btn.blue{background:rgba(0,212,255,.12);border-color:rgba(0,212,255,.45);color:#00d4ff;}
+.sub-btn.blue:active{background:rgba(0,212,255,.25);}
+.sub-btn.grey{background:rgba(138,155,181,.1);border-color:rgba(138,155,181,.35);color:#8a9bb5;}
+.sub-btn.grey:active{background:rgba(138,155,181,.2);}
+.sub-btn.neutral{background:rgba(138,155,181,.08);border-color:rgba(138,155,181,.25);color:#6b7a99;}
+.sub-btn.disabled{opacity:.35;pointer-events:none;}
+/* Zone overlay */
+.sub-btn .zone-row{display:none;position:absolute;bottom:0;left:0;right:0;height:22px;border-radius:0 0 12px 12px;overflow:hidden;}
+.sub-btn.has-zone .zone-row{display:flex;}
+.zone-seg{flex:1;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;opacity:.5;transition:opacity .15s;}
+.zone-seg:active{opacity:1;}
+.zone-l{background:rgba(255,255,255,.06);border-right:1px solid rgba(255,255,255,.06);}
+.zone-c{background:rgba(255,255,255,.04);}
+.zone-r{background:rgba(255,255,255,.06);border-left:1px solid rgba(255,255,255,.06);}
 
-.veil{position:fixed;inset:0;background:rgba(6,10,8,.88);display:none;align-items:flex-end;z-index:20}
-.veil.on{display:flex}
-.sheet{width:100%;max-width:520px;margin:0 auto;background:var(--surface);
-  border-top:1px solid var(--line);border-radius:15px 15px 0 0;
-  padding:15px 9px calc(env(safe-area-inset-bottom) + 15px)}
-.sheet h2{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:700;letter-spacing:.09em;
-  text-transform:uppercase;margin-bottom:2px}
-.sheet p{font-size:13px;color:var(--dim);margin-bottom:11px}
-.sheet input{width:100%;margin-bottom:7px;min-height:44px;padding:0 11px;border-radius:var(--r);
-  border:1px solid var(--line);background:var(--ground);color:var(--chalk);font-size:16px;
-  font-family:'Barlow',sans-serif}
-.sheet input::placeholder{color:var(--dim)}
-.skip{width:100%;margin-top:8px;background:transparent;border:1px solid var(--line);color:var(--dim);
-  border-radius:var(--r);min-height:40px;font-family:'Barlow Condensed',sans-serif;font-size:13px;
-  font-weight:600;letter-spacing:.1em;text-transform:uppercase}
-.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(150%);
-  background:var(--line);color:var(--chalk);border-radius:var(--r);padding:9px 15px;font-size:13px;
-  z-index:40;transition:transform .2s;pointer-events:none}
-.toast.on{transform:translateX(-50%) translateY(0)}
-.rt{width:100%;border-collapse:collapse;font-size:13px}
-.rt th{text-align:left;padding:6px 5px;font-family:'Barlow Condensed',sans-serif;font-size:11px;
-  font-weight:600;letter-spacing:.11em;text-transform:uppercase;color:var(--dim);
-  border-bottom:1px solid var(--line)}
-.rt td{padding:7px 5px;border-bottom:1px solid rgba(46,61,52,.5)}
-.rt td.tg{color:var(--dim);font-size:11px;white-space:nowrap}
-.rt td.vv{font-variant-numeric:tabular-nums;white-space:nowrap}
-.rt tr.sp td{padding:3px;border:0}
-.rt tr.gh td{padding:11px 5px 4px;font-family:'Barlow Condensed',sans-serif;font-size:11px;
-  font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:#4E6157;
-  border-bottom:1px solid var(--line)}
+.scoreboard{background:var(--surface);border-bottom:1px solid var(--border);padding:6px 12px 5px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.sb-team{display:flex;flex-direction:column;align-items:center;}
+.sb-lbl{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text-dim);}
+.sb-gaa{font-family:var(--font-display);font-size:42px;font-weight:900;line-height:1;color:var(--text);}
+.sb-pts{font-family:var(--font-display);font-size:20px;font-weight:900;color:var(--accent);}
+.sb-mid{display:flex;flex-direction:column;align-items:center;gap:1px;}
+.sb-qtr{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);}
+.sb-clk{font-family:var(--font-display);font-size:36px;font-weight:900;line-height:1;color:var(--text);}
+.sb-clk.paused{color:var(--amber);}
+.sb-sta{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-dim);}
+
+.le-bar{flex-shrink:0;background:var(--bg);border-bottom:1px solid var(--border);padding:6px 12px 5px;display:flex;align-items:center;gap:10px;min-height:42px;}
+.le-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;opacity:0;transition:opacity .3s;}
+.le-dot.show{opacity:1;}
+.le-txt{font-size:20px;font-weight:800;color:var(--text);flex:1;}
+.le-prev{font-size:11px;color:var(--text-dim);opacity:.65;}
+
+
+/* ── v3 single-tap capture grid ── */
+.qstrip{flex-shrink:0;max-height:0;overflow:hidden;transition:max-height .14s ease;background:#1a1410;border-bottom:1px solid transparent;}
+.qstrip.show{max-height:78px;border-bottom-color:#4a3a1e;}
+.qs-in{padding:6px 10px 7px;}
+.qs-hd{font-size:8.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:#ffab40;margin-bottom:5px;}
+.qs-row{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:5px;}
+.qch{height:34px;border-radius:8px;background:rgba(255,171,64,.12);border:1.5px solid rgba(255,171,64,.4);color:#ffab40;font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation;}
+.qch:active{background:rgba(255,171,64,.3);}
+.qch.q65{background:rgba(179,136,255,.14);border-color:rgba(179,136,255,.45);color:#b388ff;}
+
+.nudge{flex-shrink:0;max-height:0;overflow:hidden;transition:max-height .14s ease;background:#151027;}
+.nudge.show{max-height:34px;border-bottom:1px solid #3d2f6b;}
+.nudge-in{padding:7px 12px;font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:#b388ff;}
+
+.cap{flex:1;display:flex;flex-direction:column;gap:5px;padding:6px 8px 4px;overflow:hidden;min-height:0;}
+.grp{display:flex;flex-direction:column;gap:4px;min-height:0;}
+.ghd{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;height:13px;}
+.ghd-l{font-size:8.5px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:var(--text-dim);}
+.ghd-l em{font-style:normal;opacity:.5;letter-spacing:.6px;}
+.ghd-c{font-size:10px;font-weight:800;color:var(--text-dim);opacity:.75;}
+.tog{font-size:9px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);border:1.5px solid var(--border);border-radius:10px;padding:2px 10px;cursor:pointer;touch-action:manipulation;}
+.tog.on{background:rgba(179,136,255,.18);border-color:rgba(179,136,255,.5);color:#b388ff;}
+.brow{flex:1;display:grid;gap:4px;min-height:0;}
+.brow.c2{grid-template-columns:repeat(2,1fr);}
+.brow.c3{grid-template-columns:repeat(3,1fr);}
+.brow.c4{grid-template-columns:repeat(4,1fr);}
+.ebtn{position:relative;border-radius:11px;border:1.5px solid;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;touch-action:manipulation;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;overflow:hidden;}
+.ebtn:active{opacity:.5;}
+.ebl{font-family:var(--font-display);font-size:14px;font-weight:900;letter-spacing:.6px;text-transform:uppercase;line-height:1;text-align:center;}
+.ebs{font-size:8.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;opacity:.6;line-height:1;}
+.ebc{position:absolute;top:3px;right:6px;font-size:10px;font-weight:800;opacity:.45;line-height:1;}
+.eg{background:rgba(0,230,118,.12);border-color:rgba(0,230,118,.45);color:#00e676;}
+.egf{background:rgba(0,230,118,.05);border-color:rgba(0,230,118,.22);color:#00e676;}
+.er{background:rgba(255,61,90,.12);border-color:rgba(255,61,90,.45);color:#ff3d5a;}
+.erf{background:rgba(255,61,90,.05);border-color:rgba(255,61,90,.22);color:#ff3d5a;}
+.ea{background:rgba(255,171,64,.12);border-color:rgba(255,171,64,.42);color:#ffab40;}
+.ep{background:rgba(179,136,255,.12);border-color:rgba(179,136,255,.45);color:#b388ff;}
+.eb{background:rgba(0,212,255,.11);border-color:rgba(0,212,255,.4);color:#00d4ff;}
+.en{background:rgba(138,155,181,.1);border-color:rgba(138,155,181,.32);color:#8a9bb5;}
+
+.toolbar{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:6px 10px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));background:var(--surface);border-top:1px solid var(--border);flex-shrink:0;}
+.tbtn{padding:8px 4px 7px;border-radius:10px;border:1.5px solid;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;touch-action:manipulation;-webkit-touch-callout:none;}
+.tbtn:active{opacity:.6;}
+.tic{font-size:14px;line-height:1;}
+.tlb{font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;}
+#tb-flow {background:rgba(0,230,118,.12);border-color:rgba(0,230,118,.45);color:var(--green);}
+#tb-pause{background:rgba(255,171,64,.12);border-color:rgba(255,171,64,.4);color:var(--amber);}
+#tb-undo {background:rgba(255,61,90,.12);border-color:rgba(255,61,90,.4);color:var(--red);}
+#tb-stats{background:rgba(0,212,255,.12);border-color:rgba(0,212,255,.4);color:var(--accent);}
+#tb-csv  {background:rgba(179,136,255,.12);border-color:rgba(179,136,255,.4);color:var(--purple);}
+
+/* Stats screen styles (unchanged) */
+.stats-hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:8px 12px 6px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:8px;}
+.sh-score{display:flex;flex-direction:column;align-items:center;flex:1;}
+.sh-gaa{font-family:var(--font-display);font-size:34px;font-weight:900;line-height:1;color:var(--text);}
+.sh-pts{font-family:var(--font-display);font-size:17px;font-weight:900;color:var(--accent);}
+.sh-lbl{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#c8d6e8;}
+.sh-mid{display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;}
+.sh-title{font-family:var(--font-display);font-size:18px;font-weight:900;color:var(--accent);letter-spacing:3px;}
+.sh-meta{font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);text-align:center;}
+.sh-close{background:rgba(255,61,90,.12);border:1.5px solid rgba(255,61,90,.4);color:var(--red);border-radius:10px;padding:8px 12px;font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;cursor:pointer;flex-shrink:0;}
+.qpills{display:flex;gap:5px;padding:6px 10px 4px;background:var(--bg);flex-shrink:0;}
+.qpill{flex:1;padding:7px 4px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface2);font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);text-align:center;cursor:pointer;}
+.qpill.active{background:var(--accent);border-color:var(--accent);color:#000;}
+.stats-tabs{display:flex;gap:5px;padding:0 10px 5px;flex-shrink:0;}
+.stab{flex:1;padding:7px 4px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r-sm);color:var(--text-dim);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;text-align:center;cursor:pointer;}
+.stab.active{background:var(--accent);border-color:var(--accent);color:#000;}
+.stats-content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px 10px 16px;}
+.sec-lbl{font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#b0c0d8;padding:8px 2px 4px;}
+.paired-block{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:6px;}
+.paired-hdr{display:grid;grid-template-columns:1fr auto 1fr;padding:6px 14px 4px;border-bottom:1px solid var(--border);}
+.ph-us{font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--green);}
+.ph-mid{font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#c8d6e8;text-align:center;}
+.ph-them{font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--red);text-align:right;}
+.metric-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:8px 14px;border-bottom:1px solid rgba(30,45,69,.5);}
+.metric-row:last-child{border-bottom:none;}
+.mr-us{display:flex;flex-direction:column;align-items:flex-start;gap:1px;}
+.mr-them{display:flex;flex-direction:column;align-items:flex-end;gap:1px;}
+.mr-lbl{font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#dde6f0;text-align:center;min-width:72px;}
+.mr-val{font-family:var(--font-display);font-size:44px;font-weight:900;line-height:1;}
+.mr-sub{font-size:11px;font-weight:700;color:#9baabf;line-height:1.4;}
+.mr-us .mr-val{color:var(--green);}
+.mr-them .mr-val{color:var(--red);}
+.mr-tgt{font-size:8px;font-weight:700;letter-spacing:.5px;padding:2px 5px;border-radius:4px;margin-top:2px;display:inline-block;}
+.tgt-hit{background:rgba(0,230,118,.18);color:#00e676;}
+.tgt-miss{background:rgba(255,61,90,.18);color:#ff3d5a;}
+.solo-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:6px;}
+.solo-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:6px;}
+.solo-card{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:9px 10px 7px;display:flex;flex-direction:column;align-items:center;gap:1px;}
+.solo-lbl{font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:#b0c0d8;text-align:center;}
+.solo-val{font-family:var(--font-display);font-size:48px;font-weight:900;line-height:1;text-align:center;}
+.solo-sub{font-size:9px;font-weight:700;color:var(--text-dim);text-align:center;line-height:1.4;}
+.solo-card.c-green{border-color:#1a4020;background:linear-gradient(145deg,#0d2010,#0a1a0d);} .solo-card.c-green .solo-val{color:#00e676;}
+.solo-card.c-blue{border-color:#1a2a40;background:linear-gradient(145deg,#0d1520,#0a1018);} .solo-card.c-blue .solo-val{color:#00d4ff;}
+.solo-card.c-amber{border-color:#3a2000;background:linear-gradient(145deg,#1a0f00,#140b00);} .solo-card.c-amber .solo-val{color:#ffab40;}
+.solo-card.c-red{border-color:#401a1a;background:linear-gradient(145deg,#200d0d,#1a0a0a);} .solo-card.c-red .solo-val{color:#ff3d5a;}
+.solo-card.c-grey{border-color:#252e40;background:linear-gradient(145deg,#141820,#0f1218);} .solo-card.c-grey .solo-val{color:#8a9bb5;}
+.solo-card.c-purple{border-color:#301a40;background:linear-gradient(145deg,#150d20,#100a1a);} .solo-card.c-purple .solo-val{color:#b388ff;}
+.raw-row{background:var(--surface);border:1.5px solid var(--border);border-radius:11px;padding:9px 14px;display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+.raw-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.raw-lbl{flex:1;font-size:12px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.3px;}
+.raw-val{font-family:var(--font-display);font-size:32px;font-weight:900;line-height:1;}
+.raw-grp{font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#b0c0d8;padding:7px 2px 3px;}
+.rg .raw-val{color:#00e676;}.rg .raw-dot{background:#00e676;}
+.ry .raw-val{color:#ffe082;}.ry .raw-dot{background:#ffe082;}
+.rr .raw-val{color:#ff3d5a;}.rr .raw-dot{background:#ff3d5a;}
+.ro .raw-val{color:#ffab40;}.ro .raw-dot{background:#ffab40;}
+.rp .raw-val{color:#b388ff;}.rp .raw-dot{background:#b388ff;}
+.rb .raw-val{color:#00d4ff;}.rb .raw-dot{background:#00d4ff;}
+.rgr .raw-val{color:#8a9bb5;}.rgr .raw-dot{background:#8a9bb5;}
+#ht-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:2px;}
+#ht-table th{background:var(--surface2);color:#b0c0d8;font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:9px 6px;text-align:center;border-bottom:1px solid var(--border);}
+#ht-table th:first-child{text-align:left;}
+#ht-table td{padding:9px 6px;text-align:center;border-bottom:1px solid rgba(30,45,69,.5);font-weight:600;color:var(--text);}
+#ht-table td:first-child{text-align:left;color:var(--text-dim);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;}
+#ht-table td.tot{color:var(--accent);font-weight:900;font-size:15px;}
+.sn-grp{font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#b0c0d8;padding:10px 2px 4px;}
+.sn-card{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:10px 13px;margin-bottom:5px;}
+.sn-line{display:flex;align-items:baseline;gap:7px;font-size:13px;font-weight:700;color:var(--text);line-height:1.5;padding:2px 0;}
+.sn-line+.sn-line{border-top:1px solid rgba(30,45,69,.5);padding-top:6px;margin-top:4px;}
+.sn-k{color:#9baabf;font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;flex:1;}
+.sn-v{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;}
+.sn-note{font-size:11px;font-weight:600;color:var(--text-dim);line-height:1.5;padding-top:4px;}
+.sn-score{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:12px;text-align:center;margin-bottom:5px;}
+.sn-sl{font-family:var(--font-display);font-size:38px;font-weight:900;line-height:1;color:var(--text);}
+.sn-sm{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);padding-top:5px;}
+.sn-up{color:#00e676;}.sn-dn{color:#ff3d5a;}
+.sn-qs{display:flex;gap:4px;padding-top:8px;}
+.sn-q{flex:1;text-align:center;background:var(--surface2);border:1.5px solid var(--border);border-radius:9px;padding:5px 2px;}
+.sn-q.on{border-color:#4a6fa5;background:rgba(74,111,165,.18);}
+.sn-ql{font-size:9px;font-weight:800;letter-spacing:1px;color:#9baabf;}
+.sn-qv{font-size:14px;font-weight:900;font-variant-numeric:tabular-nums;color:var(--text);line-height:1.3;}
+.sn-qv small{font-size:10px;font-weight:700;color:var(--text-dim);}
+/* Readings tab (ported from Sideline v3) */
+.rt{width:100%;border-collapse:collapse;font-size:13px;margin-top:2px;}
+.rt th{text-align:left;padding:8px 6px;font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:#b0c0d8;border-bottom:1px solid var(--border);background:var(--surface2);}
+.rt th:first-child{border-top-left-radius:var(--r-sm);}
+.rt th:last-child{text-align:right;border-top-right-radius:var(--r-sm);}
+.rt td{padding:8px 6px;border-bottom:1px solid rgba(30,45,69,.5);font-weight:600;color:var(--text);}
+.rt td.tg{color:var(--text-dim);font-size:11px;white-space:nowrap;font-weight:700;}
+.rt td.vv{font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right;}
+.rt tr.sp td{padding:4px;border:0;}
+.rt tr.gh td{padding:12px 6px 4px;font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:#7d90ab;border-bottom:1px solid var(--border);}
+
+#toast{position:fixed;bottom:82px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:6px 18px;font-size:12px;font-weight:600;color:var(--text-dim);opacity:0;transition:all .22s;white-space:nowrap;z-index:600;pointer-events:none;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+#gameover{display:none;position:fixed;top:0;left:0;right:0;background:linear-gradient(90deg,#00e676,#00d4ff);color:#000;text-align:center;font-family:var(--font-display);font-size:20px;font-weight:900;letter-spacing:3px;padding:8px;z-index:50;}
+#gameover.show{display:block;}
+#storage-warn{display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(255,171,64,.15);border-top:1px solid var(--amber);padding:7px 14px;font-size:11px;font-weight:700;color:var(--amber);text-align:center;z-index:700;}
+#storage-warn.show{display:block;}
 </style>
 </head>
 <body>
 
-<header>
-  <div class="hrow">
-    <div>
-      <div class="clock" id="clock">00:00</div>
-      <div class="qtr" id="qtr">Q1 · paused</div>
-    </div>
-    <div style="display:flex;gap:5px">
-      <button class="hb" id="flow">Start</button>
-      <button class="hb" id="pause">II</button>
-      <button class="hb" id="undo">Undo</button>
-      <button class="hb" id="stat">KPI</button>
-      <button class="hb" id="csv">CSV</button>
-    </div>
-  </div>
-  <div class="score">
-    <div class="sd u"><div class="l">Ballinora</div><div class="v" id="su">0-00</div></div>
-    <div class="mg" id="mg">LEVEL</div>
-    <div class="sd t"><div class="l" id="tn">Opposition</div><div class="v" id="st">0-00</div></div>
-  </div>
-</header>
-
-<div class="cols">
-  <div></div>
-  <div class="ch u">We win it</div>
-  <div class="ch t">They win it</div>
-</div>
-
-<div class="grid">
-  <div class="rl">Attack</div>
-  <button class="b u" data-c="Attack|W">Win<span class="n" id="n-AW">0</span></button>
-  <button class="b t" data-c="Attack|L">Lose<span class="n" id="n-AL">0</span></button>
-  <div class="rl">Middle</div>
-  <button class="b u" data-c="Mid|W">Win<span class="n" id="n-MW">0</span></button>
-  <button class="b t" data-c="Mid|L">Lose<span class="n" id="n-ML">0</span></button>
-  <div class="rl">Defence</div>
-  <button class="b u" data-c="Def|W">Win<span class="n" id="n-DW">0</span></button>
-  <button class="b t" data-c="Def|L">Lose<span class="n" id="n-DL">0</span></button>
-</div>
-
-<div class="grid">
-  <div class="rl">Free</div>
-  <button class="b u" data-f="W">To us<span class="n" id="n-FW">0</span></button>
-  <button class="b t" data-f="L">To them<span class="n" id="n-FL">0</span></button>
-</div>
-
-<div class="grid">
-  <div class="rl">65</div>
-  <button class="b u" data-six="US">To us<span class="n" id="n-65U">0</span></button>
-  <button class="b t" data-six="THEM">To them<span class="n" id="n-65T">0</span></button>
-</div>
-
-<hr class="sep">
-
-<div class="cols">
-  <div></div>
-  <div class="ch u">Us</div>
-  <div class="ch t">Them</div>
-</div>
-
-<div class="grid">
-  <div class="rl">Score</div>
-  <button class="b u" data-s="US|P">Point</button>
-  <button class="b t" data-s="TH|P">Point</button>
-  <div class="rl">Wide</div>
-  <button class="b u" data-s="US|M">Miss</button>
-  <button class="b t" data-s="TH|M">Miss</button>
-  <div class="rl">Goal</div>
-  <button class="b u" data-s="US|G">Goal</button>
-  <button class="b t" data-s="TH|G">Goal</button>
-</div>
-
-<div class="grid">
-  <div class="rl">Chance</div>
-  <button class="b g" data-gc="US">Us<span class="n" id="n-GC">0</span></button>
-  <button class="b t" data-gc="THEM">Them<span class="n" id="n-GCT">0</span></button>
-</div>
-
-<div class="st">
-  <span class="dot" id="dot"></span>
-  <span id="stx">we have it · mid</span>
-  <span class="last" id="last">nothing logged</span>
-</div>
-
-<div class="veil" id="po">
-  <div class="sheet">
-    <h2 id="po-t">Puck-out</h2>
-    <p id="po-p">Who won it, and how far?</p>
-    <div class="cols" style="margin:0 0 5px"><div></div><div class="ch u">We win</div><div class="ch t">They win</div></div>
-    <div class="grid" id="po-g" style="margin:0"></div>
-    <button class="skip" id="po-s">Didn't see it — skip</button>
-  </div>
-</div>
-
-<div class="veil" id="setup">
-  <div class="sheet">
-    <h2>New match</h2>
-    <p>These four go straight into the report header.</p>
-    <input id="m-o" placeholder="Opposition">
-    <input id="m-c" placeholder="Competition">
-    <input id="m-v" placeholder="Venue">
-    <input id="m-d" placeholder="Date">
-    <button class="b u" id="m-go" style="width:100%;min-height:50px;margin-top:8px">Start logging</button>
-  </div>
-</div>
-
-<div class="veil" id="stats">
-  <div class="sheet" style="max-height:88vh;overflow-y:auto">
-    <h2>The readings</h2>
-    <p id="sc-sub">Live — same maths as the match report.</p>
-    <div id="sc-body"></div>
-    <button class="skip" id="sc-x">Back to logging</button>
-  </div>
-</div>
-
-<div class="veil" id="cf">
-  <div class="sheet">
-    <h2 id="cf-t">Confirm</h2>
-    <p id="cf-m"></p>
-    <div class="grid" style="grid-template-columns:1fr 1fr;margin:0">
-      <button class="b t" id="cf-n">Cancel</button>
-      <button class="b u" id="cf-y">Yes</button>
+<!-- META SCREEN -->
+<div class="screen" id="screen-meta">
+  <div class="meta-wrap">
+    <div class="meta-box">
+      <h2>&#x2B22; Match Setup</h2>
+      <p>Fill in the details before the match begins</p>
+      <div class="mf"><label>Opposition</label><input type="text" id="mi-opp" placeholder="e.g. Kilkenny" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="60"></div>
+      <div class="mf"><label>Competition / League</label><input type="text" id="mi-comp" placeholder="e.g. Leinster SHC" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="60"></div>
+      <div class="mf"><label>Venue</label><input type="text" id="mi-venue" placeholder="e.g. Croke Park" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="60"></div>
+      <div class="mf"><label>Date</label><input type="text" id="mi-date" readonly></div>
+      <button id="meta-start" onclick="submitMeta()">Enter App &#x2192;</button>
     </div>
   </div>
 </div>
 
-<div id="warn" style="display:none;position:fixed;top:0;left:0;right:0;z-index:50;background:#7A2621;
-  color:#FFC9C5;padding:9px 12px;font-size:13px;text-align:center">
-  Storage unavailable — do NOT close this tab. Export the CSV now.
+<!-- MAIN SCREEN -->
+<div class="screen" id="screen-main">
+  <div class="scoreboard">
+    <div class="sb-team">
+      <div class="sb-lbl">Us</div>
+      <div class="sb-gaa" id="sc-us">0-00</div>
+      <div class="sb-pts" id="sc-us-p">0</div>
+    </div>
+    <div class="sb-mid">
+      <div class="sb-qtr" id="sb-qtr">Pre-Match</div>
+      <div class="sb-clk" id="sb-clk">00:00</div>
+      <div class="sb-sta" id="sb-sta">Ready</div>
+    </div>
+    <div class="sb-team" style="align-items:flex-end">
+      <div class="sb-lbl">Them</div>
+      <div class="sb-gaa" id="sc-th">0-00</div>
+      <div class="sb-pts" id="sc-th-p">0</div>
+    </div>
+  </div>
+
+  <div class="le-bar">
+    <span class="le-dot" id="le-dot"></span>
+    <span class="le-txt" id="le-txt">&#x2014; no events yet &#x2014;</span>
+    <span class="le-prev" id="le-prev"></span>
+  </div>
+
+  <div class="qstrip" id="qstrip">
+    <div class="qs-in">
+      <div class="qs-hd" id="qs-hd"></div>
+      <div class="qs-row" id="qs-row"></div>
+    </div>
+  </div>
+
+  <div class="nudge" id="nudge"><div class="nudge-in" id="nudge-txt"></div></div>
+
+  <!-- v3 single-tap capture grid -->
+  <div class="cap" id="cap">
+
+    <div class="grp" style="flex:2.15">
+      <div class="ghd"><span class="ghd-l">We Shoot</span><span class="ghd-c" id="gc-us">0</span></div>
+      <div class="brow c4">
+        <div class="ebtn eg" data-kpi="Point &#x2013; Play (Us)"><span class="ebc">0</span><span class="ebl">Point</span><span class="ebs">Play</span></div>
+        <div class="ebtn eg" data-kpi="Point &#x2013; Free (Us)"><span class="ebc">0</span><span class="ebl">Point</span><span class="ebs">Free</span></div>
+        <div class="ebtn ea" data-kpi="Miss &#x2013; Play (Us)"><span class="ebc">0</span><span class="ebl">Wide</span><span class="ebs">Play</span></div>
+        <div class="ebtn ea" data-kpi="Miss &#x2013; Free (Us)"><span class="ebc">0</span><span class="ebl">Wide</span><span class="ebs">Free</span></div>
+      </div>
+      <div class="brow c2">
+        <div class="ebtn eg" data-kpi="Goal &#x2013; Us"><span class="ebc">0</span><span class="ebl">Goal</span></div>
+        <div class="ebtn egf" data-kpi="Goal Chance &#x2013; Us"><span class="ebc">0</span><span class="ebl">Goal Chance</span></div>
+      </div>
+    </div>
+
+    <div class="grp" style="flex:2.15">
+      <div class="ghd"><span class="ghd-l">They Shoot</span><span class="ghd-c" id="gc-th">0</span></div>
+      <div class="brow c4">
+        <div class="ebtn er" data-kpi="Point &#x2013; Play (Them)"><span class="ebc">0</span><span class="ebl">Point</span><span class="ebs">Play</span></div>
+        <div class="ebtn er" data-kpi="Point &#x2013; Free (Them)"><span class="ebc">0</span><span class="ebl">Point</span><span class="ebs">Free</span></div>
+        <div class="ebtn ea" data-kpi="Miss &#x2013; Play (Them)"><span class="ebc">0</span><span class="ebl">Wide</span><span class="ebs">Play</span></div>
+        <div class="ebtn ea" data-kpi="Miss &#x2013; Free (Them)"><span class="ebc">0</span><span class="ebl">Wide</span><span class="ebs">Free</span></div>
+      </div>
+      <div class="brow c2">
+        <div class="ebtn er" data-kpi="Goal &#x2013; Them"><span class="ebc">0</span><span class="ebl">Goal</span></div>
+        <div class="ebtn erf" data-kpi="Goal Chance &#x2013; Them"><span class="ebc">0</span><span class="ebl">Goal Chance</span></div>
+      </div>
+    </div>
+
+    <div class="grp" style="flex:1.15">
+      <div class="ghd"><span class="ghd-l">Restarts <em>&#xB7; long is default</em></span><span class="tog" id="tog-short">Short</span></div>
+      <div class="brow c4">
+        <div class="ebtn ep" data-po="Our PO &#x2013; We Win"><span class="ebc">0</span><span class="ebl">Our PO</span><span class="ebs">Win</span></div>
+        <div class="ebtn er" data-po="Our PO &#x2013; We Lose"><span class="ebc">0</span><span class="ebl">Our PO</span><span class="ebs">Lose</span></div>
+        <div class="ebtn ep" data-po="Their PO &#x2013; We Win"><span class="ebc">0</span><span class="ebl">Their PO</span><span class="ebs">Win</span></div>
+        <div class="ebtn er" data-po="Their PO &#x2013; We Lose"><span class="ebc">0</span><span class="ebl">Their PO</span><span class="ebs">Lose</span></div>
+      </div>
+    </div>
+
+    <div class="grp" style="flex:2.15">
+      <div class="ghd"><span class="ghd-l">First Contest Per Zone Entry</span><span class="ghd-c" id="gc-ct">0</span></div>
+      <div class="brow c3">
+        <div class="ebtn eb" data-kpi="Def &#x2013; Contested Win"><span class="ebc">0</span><span class="ebl">Def</span><span class="ebs">Win</span></div>
+        <div class="ebtn eb" data-kpi="Mid &#x2013; Contested Win"><span class="ebc">0</span><span class="ebl">Mid</span><span class="ebs">Win</span></div>
+        <div class="ebtn eb" data-kpi="Attack &#x2013; Contested Win"><span class="ebc">0</span><span class="ebl">Att</span><span class="ebs">Win</span></div>
+      </div>
+      <div class="brow c3">
+        <div class="ebtn en" data-kpi="Def &#x2013; Contested Loss"><span class="ebc">0</span><span class="ebl">Def</span><span class="ebs">Loss</span></div>
+        <div class="ebtn en" data-kpi="Mid &#x2013; Contested Loss"><span class="ebc">0</span><span class="ebl">Mid</span><span class="ebs">Loss</span></div>
+        <div class="ebtn en" data-kpi="Attack &#x2013; Contested Loss"><span class="ebc">0</span><span class="ebl">Att</span><span class="ebs">Loss</span></div>
+      </div>
+    </div>
+
+    <div class="grp" style="flex:1.15">
+      <div class="ghd"><span class="ghd-l">Frees</span><span class="ghd-c" id="gc-fr">0</span></div>
+      <div class="brow c3">
+        <div class="ebtn ep" data-kpi="Free Won"><span class="ebc">0</span><span class="ebl">Free Won</span></div>
+        <div class="ebtn en" data-kpi="Free Lost"><span class="ebc">0</span><span class="ebl">Free Lost</span></div>
+        <div class="ebtn en" id="btn-more"><span class="ebl">More</span><span class="ebs">rare &#xB7; 2 taps</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="toolbar">
+    <div class="tbtn" id="tb-flow"  onclick="handleFlow()"><span class="tic" id="tb-flow-ic">&#9654;</span><span class="tlb" id="tb-flow-lbl">Start</span></div>
+    <div class="tbtn" id="tb-pause" onclick="handlePause()"><span class="tic" id="tb-pause-ic">&#9646;&#9646;</span><span class="tlb" id="tb-pause-lbl">Pause</span></div>
+    <div class="tbtn" id="tb-undo"  onclick="handleUndo()"><span class="tic">&#8617;</span><span class="tlb">Undo</span></div>
+    <div class="tbtn" id="tb-stats" onclick="openStats()"><span class="tic">&#128202;</span><span class="tlb">Stats</span></div>
+    <div class="tbtn" id="tb-csv"   onclick="doCSV()"><span class="tic">&#x2B07;</span><span class="tlb">CSV</span></div>
+  </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<!-- STATS SCREEN -->
+<div class="screen" id="screen-stats">
+  <div class="stats-hdr">
+    <div class="sh-score">
+      <div class="sh-lbl">Us</div>
+      <div class="sh-gaa" id="sh-us-gaa">0-00</div>
+      <div class="sh-pts" id="sh-us-pts">0</div>
+    </div>
+    <div class="sh-mid">
+      <div class="sh-title">Stats</div>
+      <div class="sh-meta" id="sh-meta"></div>
+    </div>
+    <div class="sh-score" style="align-items:flex-end">
+      <div class="sh-lbl">Them</div>
+      <div class="sh-gaa" id="sh-th-gaa">0-00</div>
+      <div class="sh-pts" id="sh-th-pts">0</div>
+    </div>
+    <div class="sh-close" onclick="closeStats()">&#x2715; Back</div>
+  </div>
+  <div class="qpills" id="stat-qpills">
+    <div class="qpill active" data-q="match" onclick="setStatQ(this)">Match</div>
+    <div class="qpill" data-q="1" onclick="setStatQ(this)">Q1</div>
+    <div class="qpill" data-q="2" onclick="setStatQ(this)">Q2</div>
+    <div class="qpill" data-q="3" onclick="setStatQ(this)">Q3</div>
+    <div class="qpill" data-q="4" onclick="setStatQ(this)">Q4</div>
+  </div>
+  <div class="stats-tabs">
+    <div class="stab active" data-st="snap" onclick="setStatTab(this)">Snapshot</div>
+    <div class="stab" data-st="raw" onclick="setStatTab(this)">Raw</div>
+    <div class="stab" data-st="ht"  onclick="setStatTab(this)">Readings</div>
+  </div>
+  <div class="stats-content" id="stats-content"></div>
+</div>
+
+<!-- Confirm overlay -->
+<div id="confirm-overlay">
+  <div class="cfm-box">
+    <h3 id="cfm-title"></h3>
+    <p id="cfm-msg"></p>
+    <div class="cfm-btns">
+      <button id="cfm-yes" onclick="cfmYes()">Confirm</button>
+      <button id="cfm-no"  onclick="cfmClose()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Sub-screen bottom sheet -->
+<div id="sub-overlay">
+  <div class="sub-panel" id="sub-panel"></div>
+</div>
+
+<div id="gameover">Full Time</div>
+<div id="toast"></div>
+<div id="storage-warn">&#x26A0;&#xFE0F; Storage unavailable &#x2014; data will not persist</div>
 
 <script>
-/* ─────────────────────────────────────────────────────────────
-   Sideline v3 — Ballinora Junior A Hurling
+var SK='gaa_ev_v16',SSK='gaa_st_v16',SMK='gaa_mt_v16';
+var subOpen=false,toastT=null,clockT=null;
 
-   CONTRACT: every figure in the half-time and match reports is
-   computed from the KPI Summary block. NO report figure depends
-   on inferred state. Possession and ChainID exist only to give
-   primitive chains for free; if they drift, reports are unaffected.
-
-   Ball share (feeds Cashing-In) = contested wins + puck-out wins
-   over contested + puck-outs. Frees and turnovers are NOT in it.
-   ───────────────────────────────────────────────────────────── */
-
-var KPIS = [
- 'Point – Play (Us)','Miss – Play (Us)','Point – Free (Us)','Miss – Free (Us)','Point – 65 (Us)','Miss – 65 (Us)','Goal – Us','Goal Chance – Us',
- 'Point – Play (Them)','Miss – Play (Them)','Point – Free (Them)','Miss – Free (Them)','Point – 65 (Them)','Miss – 65 (Them)','Goal – Them','Goal Chance – Them',
- 'Our PO – We Win – Short','Our PO – We Win – Long','Our PO – We Lose – Short','Our PO – We Lose – Long',
- 'Their PO – We Win – Short','Their PO – We Win – Long','Their PO – We Lose – Short','Their PO – We Lose – Long',
- 'Attack – Favorable Pass','Attack – Run Thru 45','Attack – Contested Win','Attack – Contested Loss','Attack – Unforced Turnover',
- 'Mid – Favorable','Mid – Contested Win','Mid – Contested Loss','Mid – Unforced Loss','Mid – Reset',
- 'Def – Opp Favorable','Def – Contested Win','Def – Contested Loss','Def – Opp Unforced Turnover',
- 'Free Won','Free Lost','65 – Us','65 – Them','Card for Us','Turnover Won','T/O Forced (Them)','Unforced Win (Them)'
+/* ── New KPI list per handover doc ── */
+var KPIS=[
+  'Point \u2013 Play (Us)','Miss \u2013 Play (Us)','Point \u2013 Free (Us)','Miss \u2013 Free (Us)','Goal \u2013 Us','Goal Chance \u2013 Us',
+  'Point \u2013 Play (Them)','Miss \u2013 Play (Them)','Point \u2013 Free (Them)','Miss \u2013 Free (Them)','Goal \u2013 Them','Goal Chance \u2013 Them',
+  'Our PO \u2013 We Win \u2013 Short','Our PO \u2013 We Win \u2013 Long',
+  'Our PO \u2013 We Lose \u2013 Short','Our PO \u2013 We Lose \u2013 Long',
+  'Their PO \u2013 We Win \u2013 Short','Their PO \u2013 We Win \u2013 Long',
+  'Their PO \u2013 We Lose \u2013 Short','Their PO \u2013 We Lose \u2013 Long',
+  'Attack \u2013 Favorable Pass','Attack \u2013 Run Thru 45',
+  'Attack \u2013 Contested Win','Attack \u2013 Contested Loss','Attack \u2013 Unforced Turnover',
+  'Mid \u2013 Favorable','Mid \u2013 Contested Win','Mid \u2013 Contested Loss','Mid \u2013 Unforced Loss','Mid \u2013 Reset',
+  'Def \u2013 Opp Favorable','Def \u2013 Contested Win','Def \u2013 Contested Loss','Def \u2013 Opp Unforced Turnover',
+  'Free Won','Free Lost','Card for Us',
+  'Turnover Won','T/O Forced (Them)','Unforced Win (Them)'
 ];
 
-var S = {
-  poss:'US', zone:'Mid', chain:1, pendingFree:null, log:[],
-  flow:'pre',                       // pre → h1 → ht → h2 → ended
-  hStart:0, hPaused:0, pausedAt:0,  // clock for the CURRENT half only
-  meta:{them:'Opposition', comp:'\u2014', venue:'\u2014', date:''}
+var KPI_COL={};
+KPI_COL['Point \u2013 Play (Us)']='#00e676';KPI_COL['Miss \u2013 Play (Us)']='#ffe082';
+KPI_COL['Point \u2013 Free (Us)']='#00e676';KPI_COL['Miss \u2013 Free (Us)']='#ffe082';
+KPI_COL['Goal \u2013 Us']='#00e676';KPI_COL['Goal Chance \u2013 Us']='#00e676';
+KPI_COL['Point \u2013 Play (Them)']='#ff3d5a';KPI_COL['Miss \u2013 Play (Them)']='#ffab40';
+KPI_COL['Point \u2013 Free (Them)']='#ff3d5a';KPI_COL['Miss \u2013 Free (Them)']='#ffab40';KPI_COL['Goal \u2013 Them']='#ff3d5a';KPI_COL['Goal Chance \u2013 Them']='#ff3d5a';
+KPI_COL['Our PO \u2013 We Win \u2013 Short']='#b388ff';KPI_COL['Our PO \u2013 We Win \u2013 Long']='#b388ff';
+KPI_COL['Our PO \u2013 We Lose \u2013 Short']='#ff3d5a';KPI_COL['Our PO \u2013 We Lose \u2013 Long']='#ff3d5a';
+KPI_COL['Their PO \u2013 We Win \u2013 Short']='#b388ff';KPI_COL['Their PO \u2013 We Win \u2013 Long']='#b388ff';
+KPI_COL['Their PO \u2013 We Lose \u2013 Short']='#ff3d5a';KPI_COL['Their PO \u2013 We Lose \u2013 Long']='#ff3d5a';
+KPI_COL['Attack \u2013 Favorable Pass']='#00d4ff';KPI_COL['Attack \u2013 Run Thru 45']='#00d4ff';
+KPI_COL['Attack \u2013 Contested Win']='#00d4ff';KPI_COL['Attack \u2013 Contested Loss']='#8a9bb5';
+KPI_COL['Attack \u2013 Unforced Turnover']='#ffab40';
+KPI_COL['Mid \u2013 Favorable']='#00d4ff';KPI_COL['Mid \u2013 Contested Win']='#00d4ff';
+KPI_COL['Mid \u2013 Contested Loss']='#8a9bb5';KPI_COL['Mid \u2013 Unforced Loss']='#ffab40';KPI_COL['Mid \u2013 Reset']='#6b7a99';
+KPI_COL['Def \u2013 Opp Favorable']='#8a9bb5';KPI_COL['Def \u2013 Contested Win']='#00e676';
+KPI_COL['Def \u2013 Contested Loss']='#8a9bb5';KPI_COL['Def \u2013 Opp Unforced Turnover']='#ffab40';
+KPI_COL['Free Won']='#b388ff';KPI_COL['Free Lost']='#8a9bb5';KPI_COL['Card for Us']='#ff3d5a';
+KPI_COL['Turnover Won']='#00e676';KPI_COL['T/O Forced (Them)']='#6b7a99';KPI_COL['Unforced Win (Them)']='#6b7a99';
+
+/* ── Sub-screen definitions ── */
+var SUB_SCREENS={
+  'more':{
+    title:'Rare Events',
+    grid:'g3',
+    zone:false,
+    btns:[
+      {label:'Fav Pass',kpi:'Attack \u2013 Favorable Pass',cls:'blue'},
+      {label:'Run Thru 45',kpi:'Attack \u2013 Run Thru 45',cls:'blue'},
+      {label:'Att Unf T/O',kpi:'Attack \u2013 Unforced Turnover',cls:'amber'},
+      {label:'Mid Fav',kpi:'Mid \u2013 Favorable',cls:'blue'},
+      {label:'Mid Unf Loss',kpi:'Mid \u2013 Unforced Loss',cls:'amber'},
+      {label:'Mid Reset',kpi:'Mid \u2013 Reset',cls:'neutral'},
+      {label:'Opp Fav',kpi:'Def \u2013 Opp Favorable',cls:'grey'},
+      {label:'Opp Unf T/O',kpi:'Def \u2013 Opp Unforced Turnover',cls:'amber'},
+      {label:'Card for Us',kpi:'Card for Us',cls:'red'},
+      {label:'Turnover Won',kpi:'Turnover Won',cls:'green'}
+    ]
+  }
 };
-var hist = [];
 
-function snap(){ hist.push(JSON.stringify({p:S.poss,z:S.zone,c:S.chain,f:S.pendingFree,n:S.log.length})); if(hist.length>400) hist.shift(); }
+/* v3 group counters */
+var GRP_KPIS={
+  'us':['Point \u2013 Play (Us)','Miss \u2013 Play (Us)','Point \u2013 Free (Us)','Miss \u2013 Free (Us)','Goal \u2013 Us','Goal Chance \u2013 Us'],
+  'th':['Point \u2013 Play (Them)','Miss \u2013 Play (Them)','Point \u2013 Free (Them)','Miss \u2013 Free (Them)','Goal \u2013 Them','Goal Chance \u2013 Them'],
+  'ct':['Attack \u2013 Contested Win','Attack \u2013 Contested Loss','Mid \u2013 Contested Win','Mid \u2013 Contested Loss','Def \u2013 Contested Win','Def \u2013 Contested Loss'],
+  'fr':['Free Won','Free Lost']
+};
+var shortMode=false,qualT=null,nudgeT=null;
 
-/* The clock RESTARTS at half time — Q3 begins at 00:00, exactly as v2 did.
-   Quarters are 15 minutes. Get this wrong and every H1/H2 figure in the
-   report is silently wrong, because the Quarter column drives the split. */
-function live(){ return S.flow === 'h1' || S.flow === 'h2'; }
-function ms(){
-  if(S.flow === 'pre') return 0;
-  if(!S.hStart) return 0;
-  var end = S.pausedAt ? S.pausedAt : Date.now();
-  return Math.max(0, end - S.hStart - S.hPaused);
-}
-function qOf(){
-  var half = (S.flow === 'h2' || S.flow === 'ended') ? 2 : 1;
-  var m = ms()/60000;
-  return (half === 1) ? (m < 15 ? 1 : 2) : (m < 15 ? 3 : 4);
-}
-function mmss(t){ var s=Math.floor(t/1000); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); }
 
-function emit(kpi){
-  S.log.push({kpi:kpi, q:qOf(), time:'Q'+qOf()+' '+mmss(ms()), ts:Date.now(),
-              poss:S.poss, zone:S.zone, chain:S.chain});
-  save();
-}
-function guard(){
-  if(live()) return true;
-  toast(S.flow==='pre' ? 'Start the first half first'
-      : S.flow==='ht' ? 'Half time — start the second half'
-      : S.flow==='ended' ? 'Match is over' : 'Clock is paused');
-  return false;
-}
-/* Possession is SAMPLED (only the first contest per zone entry is logged), so it
-   must never define a boundary. A passage runs restart → restart, and restarts
-   (puck-outs, frees, shots) are a census. Only those may increment the counter. */
-function flip(to){ S.poss = to; }
-function newPassage(){ S.chain++; }
-function cnt(k){ var n=0; for(var i=0;i<S.log.length;i++) if(S.log[i].kpi===k) n++; return n; }
+var VALID_FLOWS=['pre','first_half','half_time','second_half','ended'];
+var eventLog=[],counts={};
+var meta={opposition:'',competition:'',venue:'',date:''};
+var state={gameFlow:'pre',fhStart:null,fhEnd:null,fhPausedMs:0,shStart:null,shEnd:null,shPausedMs:0,pausedAt:null};
+var statQ='match',statTab='snap',pendingCfm=null;
+var storageOk=true,storageType='local';
 
-function contest(zone, res){
-  if(!guard()) return; snap(); S.zone = zone; S.pendingFree = null;
-  if(res === 'W'){ flip('US');   emit(zone + ' \u2013 Contested Win'); }
-  else           { flip('THEM'); emit(zone + ' \u2013 Contested Loss'); }
-  render();
-}
-
-function free(res){
-  if(!guard()) return; snap();
-  newPassage();
-  if(res === 'W'){ flip('US');   emit('Free Won');  S.pendingFree = 'US'; }
-  else           { flip('THEM'); emit('Free Lost'); S.pendingFree = 'THEM'; }
-  render();
-}
-
-function sixtyfive(side){
-  if(!guard()) return; snap();
-  newPassage();
-  var us = side === 'US';
-  flip(us ? 'US' : 'THEM');
-  emit(us ? '65 \u2013 Us' : '65 \u2013 Them');
-  S.pendingFree = us ? 'US65' : 'THEM65';
-  render();
-}
-
-function shot(side, kind){
-  if(!guard()) return; snap();
-  var us = side === 'US';
-  flip(us ? 'US' : 'THEM');
-  if(kind === 'G'){ emit(us ? 'Goal \u2013 Us' : 'Goal \u2013 Them'); }
-  else {
-    var sd = us ? 'US' : 'THEM';
-    var frm = (S.pendingFree === sd) ? 'Free' : (S.pendingFree === sd+'65') ? '65' : 'Play';
-    emit((kind === 'P' ? 'Point \u2013 ' : 'Miss \u2013 ') + frm + ' ' + (us ? '(Us)' : '(Them)'));
-  }
-  S.pendingFree = null;
-  askPO(us ? 'THEM' : 'US');
-  render();
-}
-
-function chance(side){ if(!guard()) return; snap(); var us=side==='US'; flip(us?'US':'THEM'); S.zone=us?'Attack':'Def'; emit(us?'Goal Chance \u2013 Us':'Goal Chance \u2013 Them'); render(); }
-
-var poOwner = null;
-function askPO(owner){
-  poOwner = owner;
-  document.getElementById('po-t').textContent = owner==='US' ? 'Our puck-out' : 'Their puck-out';
-  var g = document.getElementById('po-g'); g.innerHTML = '';
-  ['Short','Long'].forEach(function(len){
-    var lab = document.createElement('div'); lab.className='rl'; lab.textContent = len; g.appendChild(lab);
-    ['W','L'].forEach(function(res){
-      var b = document.createElement('button');
-      b.className = 'b ' + (res==='W' ? 'u' : 't');
-      b.textContent = res==='W' ? 'We win' : 'They win';
-      b.onclick = function(){ takePO(res, len); };
-      g.appendChild(b);
-    });
-  });
-  document.getElementById('po').classList.add('on');
-}
-function takePO(res, len){
-  var own = poOwner;
-  newPassage();
-  S.poss = res==='W' ? 'US' : 'THEM';
-  S.zone = len==='Long' ? 'Mid' : (own==='THEM' ? 'Attack' : 'Def');
-  S.pendingFree = null;
-  emit((own==='US' ? 'Our PO' : 'Their PO') + ' \u2013 ' + (res==='W' ? 'We Win' : 'We Lose') + ' \u2013 ' + len);
-  closePO(); render();
-}
-function closePO(){ document.getElementById('po').classList.remove('on'); poOwner = null; }
-
-function undo(){
-  if(!hist.length){ toast('Nothing to undo'); return; }
-  var h = JSON.parse(hist.pop());
-  S.log.length = h.n; S.poss=h.p; S.zone=h.z; S.chain=h.c; S.pendingFree=h.f;
-  closePO(); save(); render(); toast('Undone');
-}
-
-function render(){
-  var gu=cnt('Goal \u2013 Us'), gt=cnt('Goal \u2013 Them');
-  var pu=cnt('Point \u2013 Play (Us)')+cnt('Point \u2013 Free (Us)')+cnt('Point \u2013 65 (Us)');
-  var pt=cnt('Point \u2013 Play (Them)')+cnt('Point \u2013 Free (Them)')+cnt('Point \u2013 65 (Them)');
-  document.getElementById('su').textContent = gu+'-'+String(pu).padStart(2,'0');
-  document.getElementById('st').textContent = gt+'-'+String(pt).padStart(2,'0');
-  var m = (gu*3+pu)-(gt*3+pt);
-  document.getElementById('mg').textContent = m===0 ? 'LEVEL' : (m>0?'+':'')+m;
-  document.getElementById('tn').textContent = S.meta.them;
-
-  var ids = {'n-AW':'Attack \u2013 Contested Win','n-AL':'Attack \u2013 Contested Loss',
-             'n-MW':'Mid \u2013 Contested Win','n-ML':'Mid \u2013 Contested Loss',
-             'n-DW':'Def \u2013 Contested Win','n-DL':'Def \u2013 Contested Loss',
-             'n-FW':'Free Won','n-FL':'Free Lost','n-GC':'Goal Chance \u2013 Us','n-GCT':'Goal Chance \u2013 Them',
-             'n-65U':'65 \u2013 Us','n-65T':'65 \u2013 Them'};
-  for(var id in ids) document.getElementById(id).textContent = cnt(ids[id]);
-
-  document.getElementById('dot').className = 'dot' + (S.poss==='THEM' ? ' t' : '');
-  document.getElementById('stx').textContent =
-    (S.poss==='US' ? 'we have it' : 'they have it') + ' \u00b7 ' + S.zone.toLowerCase() +
-    (S.pendingFree ? (String(S.pendingFree).slice(-2)==='65' ? ' \u00b7 65 pending' : ' \u00b7 free pending') : '') + ' \u00b7 p' + S.chain;
-  var L = S.log[S.log.length-1];
-  document.getElementById('last').textContent = L ? L.kpi : 'nothing logged';
-  var F = {pre:['Start',0], h1:['End 1st',1], ht:['Start 2nd',0], h2:['End',1], ended:['Full time',0]}[S.flow];
-  var fb = document.getElementById('flow');
-  fb.textContent = F[0]; fb.classList.toggle('on', !!F[1]);
-  var pb = document.getElementById('pause');
-  pb.textContent = S.pausedAt && live() ? '\u25B6' : 'II';
-  pb.disabled = !live();
-  pb.style.opacity = live() ? 1 : .35;
-}
-function tick(){
-  document.getElementById('clock').textContent = mmss(ms());
-  var lbl = S.flow==='pre' ? 'Pre-match'
-          : S.flow==='ht'  ? 'Half time'
-          : S.flow==='ended' ? 'Full time'
-          : 'Q'+qOf()+(S.pausedAt ? ' \u00b7 paused' : ' \u00b7 live');
-  document.getElementById('qtr').textContent = lbl;
-}
-
-/* Storage: v2 warned the user when this failed. Silent failure loses a match. */
-var storageOK = true;
-function save(){
-  try{ localStorage.setItem('sideline_v3', JSON.stringify(S)); }
+/* ── Storage helpers ── */
+function initStorage(){
+  try{localStorage.setItem('_gaa_test','1');localStorage.removeItem('_gaa_test');storageType='local';}
   catch(e){
-    if(storageOK){ storageOK = false; document.getElementById('warn').style.display='block'; }
+    try{sessionStorage.setItem('_gaa_test','1');sessionStorage.removeItem('_gaa_test');storageType='session';showStorageWarn('Using session storage');}
+    catch(e2){storageType='none';showStorageWarn('Storage unavailable');}
   }
 }
-var FLOWS = ['pre','h1','ht','h2','ended'];
-function load(){
-  try{
-    var r = localStorage.getItem('sideline_v3');
-    if(!r) return;
-    var p = JSON.parse(r);
-    if(!p || !Array.isArray(p.log)) return;
-    if(FLOWS.indexOf(p.flow) === -1) return;                    // reject corrupt flow
-    for(var i=0;i<p.log.length;i++){
-      var e = p.log[i];
-      if(!e || typeof e.kpi !== 'string' || [1,2,3,4].indexOf(e.q) === -1) return;
+function getStore(){if(storageType==='local')return localStorage;if(storageType==='session')return sessionStorage;return null;}
+function lsGet(k){var s=getStore();if(!s)return null;try{return s.getItem(k);}catch(e){return null;}}
+function lsSet(k,v){var s=getStore();if(!s)return;try{s.setItem(k,v);}catch(e){}}
+function lsRemove(k){var s=getStore();if(!s)return;try{s.removeItem(k);}catch(e){}}
+function showStorageWarn(msg){var el=document.getElementById('storage-warn');if(msg)el.textContent=msg;el.classList.add('show');}
+
+function esc(s){if(s===null||s===undefined)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#x27;');}
+function csvSafe(s){if(s===null||s===undefined)return'\u2014';var str=String(s).trim()||'\u2014';if(/^[=+\-@\t\r]/.test(str))str="'"+str;return str.replace(/[\r\n]/g,' ');}
+function pad(n){return String(n).padStart(2,'0');}
+function safeFloat(v){var n=parseFloat(v);return isNaN(n)?0:n;}
+
+function validateEvent(e){
+  if(!e||typeof e!=='object')return false;
+  if(typeof e.kpi!=='string'||KPIS.indexOf(e.kpi)===-1)return false;
+  if(typeof e.quarter!=='number'||[1,2,3,4].indexOf(e.quarter)===-1)return false;
+  if(typeof e.ts!=='number'||e.ts<=0)return false;
+  return true;
+}
+
+/* ── Init ── */
+function init(){
+  initStorage();
+  KPIS.forEach(function(k){counts[k]=0;});
+  try{var s=lsGet(SK);if(s){var p=JSON.parse(s);if(Array.isArray(p))eventLog=p.filter(validateEvent);}}catch(e){}
+  try{var s=lsGet(SSK);if(s){var p=JSON.parse(s);if(p&&VALID_FLOWS.indexOf(p.gameFlow)>-1)state=p;}}catch(e){}
+  try{var s=lsGet(SMK);if(s){var p=JSON.parse(s);if(p)meta=p;}}catch(e){}
+  document.getElementById('mi-date').value=fmtDate(new Date());
+  eventLog.forEach(function(e){counts[e.kpi]=(counts[e.kpi]||0)+1;});
+  if(meta.opposition||meta.competition||meta.venue){
+    document.getElementById('mi-opp').value=meta.opposition||'';
+    document.getElementById('mi-comp').value=meta.competition||'';
+    document.getElementById('mi-venue').value=meta.venue||'';
+  }
+  refreshAll();updateNavCounts();
+  if(clockT)clearInterval(clockT);
+  clockT=setInterval(tickClock,500);
+  if(meta.opposition)document.getElementById('screen-meta').classList.add('hidden');
+  setupSubOverlay();setupCapture();
+  if(eventLog.length>0){var last=eventLog[eventLog.length-1];updateLE(last.qual?(last.kpi+'  \u00B7  '+last.qual):last.kpi,KPI_COL[last.kpi]);}
+  document.addEventListener('touchmove',function(e){if(e.target.closest('.stats-content,.meta-wrap'))return;e.preventDefault();},{passive:false});
+  var lastTap=0;
+  document.addEventListener('touchend',function(e){var now=Date.now();if(now-lastTap<350)e.preventDefault();lastTap=now;},{passive:false});
+}
+
+function fmtDate(d){try{return d.toLocaleDateString('en-IE',{weekday:'short',day:'numeric',month:'short',year:'numeric'});}catch(e){return d.toDateString();}}
+
+function submitMeta(){
+  meta={
+    opposition:(document.getElementById('mi-opp').value||'').trim().slice(0,60)||'\u2014',
+    competition:(document.getElementById('mi-comp').value||'').trim().slice(0,60)||'\u2014',
+    venue:(document.getElementById('mi-venue').value||'').trim().slice(0,60)||'\u2014',
+    date:(document.getElementById('mi-date').value||'').trim().slice(0,40)
+  };
+  lsSet(SMK,JSON.stringify(meta));
+  document.getElementById('screen-meta').classList.add('hidden');
+}
+
+/* ── Sub-screen overlay ── */
+function setupSubOverlay(){
+  var overlay=document.getElementById('sub-overlay');
+  function dismissIfOutside(e){var panel=document.getElementById('sub-panel');if(panel&&!panel.contains(e.target))closeSubOverlay();}
+  overlay.addEventListener('touchstart',dismissIfOutside,{passive:true});
+  overlay.addEventListener('mousedown',dismissIfOutside);
+}
+
+function openSub(key){
+  var cfg=SUB_SCREENS[key];if(!cfg)return;
+  var panel=document.getElementById('sub-panel');
+  var html='<div class="sub-sheet-hdr"><div class="sub-sheet-title">'+esc(cfg.title)+'</div><div class="sub-sheet-cancel" id="sub-cancel">Cancel</div></div>';
+  html+='<div class="sub-grid '+cfg.grid+'">';
+  for(var i=0;i<cfg.btns.length;i++){
+    var b=cfg.btns[i];
+    var spanStyle=b.span?'grid-column:span '+b.span+';':'';
+    if(b.blank){
+      html+='<div class="sub-btn blank" style="'+spanStyle+'visibility:hidden;pointer-events:none;"></div>';
+      continue;
     }
-    S = p;
-    if(live() && !S.pausedAt) S.pausedAt = Date.now();          // resume paused, never mid-run
+    var disabledCls=b.disabled?' disabled':'';
+    var zoneCls=(b.zone&&!b.disabled)?' has-zone':'';
+    var c=counts[b.kpi]||0;
+    html+='<div class="sub-btn '+b.cls+disabledCls+zoneCls+'" data-kpi="'+esc(b.kpi)+'" data-col="'+(KPI_COL[b.kpi]||'#888')+'" style="'+spanStyle+'">';
+    html+='<div class="sb-count">'+c+'</div>';
+    html+='<div class="sb-label">'+esc(b.label)+'</div>';
+    if(b.zone&&!b.disabled){
+      html+='<div class="zone-row"><div class="zone-seg zone-l" data-zone="Left">L</div><div class="zone-seg zone-c" data-zone="Centre">C</div><div class="zone-seg zone-r" data-zone="Right">R</div></div>';
+    }
+    html+='</div>';
+  }
+  html+='</div>';
+  panel.innerHTML=html;
+  document.getElementById('sub-overlay').classList.add('show');
+  subOpen=true;
+
+  var cancelBtn=document.getElementById('sub-cancel');
+  if(cancelBtn){
+    cancelBtn.addEventListener('touchstart',function(e){e.stopPropagation();closeSubOverlay();},{passive:true});
+    cancelBtn.addEventListener('click',function(e){e.stopPropagation();closeSubOverlay();});
+  }
+
+  /* Wire up buttons */
+  var btns=panel.querySelectorAll('.sub-btn:not(.disabled):not(.blank)');
+  for(var i=0;i<btns.length;i++){
+    (function(btn){
+      /* Zone segments fire with zone data */
+      var zoneSegs=btn.querySelectorAll('.zone-seg');
+      if(zoneSegs.length>0){
+        for(var z=0;z<zoneSegs.length;z++){
+          (function(seg){
+            function fireZone(e){
+              e.stopPropagation();e.preventDefault();
+              var kpi=btn.getAttribute('data-kpi');
+              var col=btn.getAttribute('data-col');
+              var zone=seg.getAttribute('data-zone');
+              closeSubOverlay();
+              doTap(kpi,col,zone);
+            }
+            seg.addEventListener('touchstart',fireZone,{passive:false});
+            seg.addEventListener('click',fireZone);
+          })(zoneSegs[z]);
+        }
+        /* Tap on body of button (not zone) also fires without zone */
+        function fireNoZone(e){
+          if(e.target.closest('.zone-seg'))return;
+          e.stopPropagation();e.preventDefault();
+          var kpi=btn.getAttribute('data-kpi');
+          var col=btn.getAttribute('data-col');
+          closeSubOverlay();
+          doTap(kpi,col,null);
+        }
+        btn.addEventListener('touchstart',fireNoZone,{passive:false});
+        btn.addEventListener('click',fireNoZone);
+      } else {
+        function fire(e){
+          e.stopPropagation();e.preventDefault();
+          var kpi=btn.getAttribute('data-kpi');
+          var col=btn.getAttribute('data-col');
+          closeSubOverlay();
+          doTap(kpi,col,null);
+        }
+        btn.addEventListener('touchstart',fire,{passive:false});
+        btn.addEventListener('click',fire);
+      }
+    })(btns[i]);
+  }
+}
+
+function closeSubOverlay(){document.getElementById('sub-overlay').classList.remove('show');subOpen=false;}
+
+/* ── Nav count badges ── */
+function updateNavCounts(){
+  for(var key in GRP_KPIS){
+    var total=0;
+    for(var i=0;i<GRP_KPIS[key].length;i++)total+=(counts[GRP_KPIS[key][i]]||0);
+    var el=document.getElementById('gc-'+key);
+    if(el)el.textContent=total;
+  }
+  var btns=document.querySelectorAll('#cap .ebtn');
+  for(var b=0;b<btns.length;b++){
+    var badge=btns[b].querySelector('.ebc');
+    if(!badge)continue;
+    var k=btns[b].getAttribute('data-kpi'),po=btns[b].getAttribute('data-po'),n=0;
+    if(po)n=(counts[po+' \u2013 Short']||0)+(counts[po+' \u2013 Long']||0);
+    else if(k)n=counts[k]||0;
+    badge.textContent=n;
+  }
+}
+
+/* ── Confirm modal ── */
+function showConfirm(title,msg,action,isPos){
+  document.getElementById('cfm-title').textContent=title;
+  document.getElementById('cfm-msg').textContent=msg;
+  document.getElementById('cfm-yes').className=isPos?'pos':'';
+  pendingCfm=action;
+  document.getElementById('confirm-overlay').classList.add('show');
+}
+function cfmYes(){cfmClose();if(pendingCfm){var fn=pendingCfm;pendingCfm=null;fn();}}
+function cfmClose(){document.getElementById('confirm-overlay').classList.remove('show');}
+
+/* ── Clock ── */
+function getMatchSecs(atMs){
+  var now=atMs!==undefined?atMs:Date.now();
+  if(state.gameFlow==='pre')return 0;
+  var fhEnd=state.fhEnd||now;
+  if(state.gameFlow==='first_half'&&state.pausedAt)fhEnd=state.pausedAt;
+  var fh=state.fhStart?Math.max(0,Math.floor((fhEnd-state.fhStart-state.fhPausedMs)/1000)):0;
+  if(state.gameFlow==='first_half'||state.gameFlow==='half_time')return fh;
+  var shEnd=state.shEnd||now;
+  if(state.gameFlow==='second_half'&&state.pausedAt)shEnd=state.pausedAt;
+  var sh=state.shStart?Math.max(0,Math.floor((shEnd-state.shStart-state.shPausedMs)/1000)):0;
+  return 1800+sh;
+}
+function getQuarter(s){
+  if(state.gameFlow==='first_half'||state.gameFlow==='half_time')return s<900?1:2;
+  return s<900?3:4;
+}
+function tickClock(){
+  try{
+    var clk=document.getElementById('sb-clk'),qtr=document.getElementById('sb-qtr'),sta=document.getElementById('sb-sta');
+    if(!clk)return;
+    if(state.gameFlow==='pre'){clk.textContent='00:00';qtr.textContent='Pre-Match';sta.textContent='Ready';clk.classList.remove('paused');return;}
+    var s=getMatchSecs();
+    var ds=(state.gameFlow==='second_half'||state.gameFlow==='ended')?(s-1800):s;
+    if(ds<0)ds=0;
+    clk.textContent=pad(Math.floor(ds/60))+':'+pad(ds%60);
+    if(state.gameFlow==='half_time'){clk.classList.add('paused');qtr.textContent='Half Time';sta.textContent='Half Time';return;}
+    if(state.gameFlow==='ended'){clk.classList.remove('paused');qtr.textContent='Full Time';sta.textContent='Full Time';return;}
+    clk.classList.toggle('paused',state.pausedAt!==null);
+    sta.textContent=state.pausedAt?'Paused':'Live';
+    qtr.textContent='Quarter '+getQuarter(state.gameFlow==='second_half'?(s-1800):s);
   }catch(e){}
 }
 
-/* Flow: pre → h1 → ht → h2 → ended. The second half starts a fresh clock. */
-function flowNext(){
-  if(S.flow === 'pre'){  S.flow='h1'; S.hStart=Date.now(); S.hPaused=0; S.pausedAt=0; save(); render(); return; }
-  if(S.flow === 'h1'){   confirm2('End first half?', 'The clock stops and the second half will start from 00:00.', function(){
-                           S.flow='ht'; S.pausedAt=S.pausedAt||Date.now(); save(); render(); openStats(); }); return; }
-  if(S.flow === 'ht'){   S.flow='h2'; S.hStart=Date.now(); S.hPaused=0; S.pausedAt=0; save(); render(); return; }
-  if(S.flow === 'h2'){   confirm2('End the match?', 'No further events can be logged.', function(){
-                           S.flow='ended'; S.pausedAt=S.pausedAt||Date.now(); save(); render(); openStats(); }); return; }
-  if(S.flow === 'ended'){ openStats(); }
+/* ── Game flow ── */
+function handleFlow(){
+  var gf=state.gameFlow;
+  if(gf==='pre'){doStartGame();return;}
+  if(gf==='first_half'){showConfirm('End 1st Half','Mark first half finished?',doEndFirstHalf,false);return;}
+  if(gf==='half_time'){showConfirm('Start 2nd Half','Start second half clock?',doStartSecondHalf,true);return;}
+  if(gf==='second_half'){showConfirm('End Game','Mark match as finished?',doEndGame,false);return;}
+  if(gf==='ended'){showConfirm('New Game','Clear all data and start fresh?',doNewGame,false);}
 }
-function togglePause(){
-  if(!live()){ toast('Only during play'); return; }
-  if(S.pausedAt){ S.hPaused += Date.now()-S.pausedAt; S.pausedAt=0; }
-  else { S.pausedAt = Date.now(); }
-  save(); render();
+function doStartGame(){
+  Object.assign(state,{gameFlow:'first_half',fhStart:Date.now(),fhEnd:null,fhPausedMs:0,shStart:null,shEnd:null,shPausedMs:0,pausedAt:null});
+  lsSet(SSK,JSON.stringify(state));refreshAll();toast('Kick-off \u2014 1st Half');
 }
-function confirm2(title, msg, yes){
-  document.getElementById('cf-t').textContent=title;
-  document.getElementById('cf-m').textContent=msg;
-  document.getElementById('cf').classList.add('on');
-  document.getElementById('cf-y').onclick=function(){ document.getElementById('cf').classList.remove('on'); yes(); };
+function doEndFirstHalf(){
+  if(state.pausedAt){state.fhPausedMs+=Date.now()-state.pausedAt;state.pausedAt=null;}
+  state.gameFlow='half_time';state.fhEnd=Date.now();
+  lsSet(SSK,JSON.stringify(state));refreshAll();toast('Half Time');
+}
+function doStartSecondHalf(){
+  Object.assign(state,{gameFlow:'second_half',shStart:Date.now(),shEnd:null,shPausedMs:0,pausedAt:null});
+  lsSet(SSK,JSON.stringify(state));refreshAll();toast('2nd Half');
+}
+function doEndGame(){
+  if(state.pausedAt){state.shPausedMs+=Date.now()-state.pausedAt;state.pausedAt=null;}
+  state.gameFlow='ended';state.shEnd=Date.now();
+  clearTimeout(qualT);clearTimeout(nudgeT);hideQual();hideNudge();
+  lsSet(SSK,JSON.stringify(state));
+  document.getElementById('gameover').classList.add('show');
+  refreshAll();toast('Full Time');
+}
+function doNewGame(){
+  eventLog=[];meta={opposition:'',competition:'',venue:'',date:''};
+  state={gameFlow:'pre',fhStart:null,fhEnd:null,fhPausedMs:0,shStart:null,shEnd:null,shPausedMs:0,pausedAt:null};
+  KPIS.forEach(function(k){counts[k]=0;});
+  lsSet(SK,JSON.stringify(eventLog));lsRemove(SMK);lsSet(SSK,JSON.stringify(state));
+  document.getElementById('gameover').classList.remove('show');
+  ['mi-opp','mi-comp','mi-venue'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('mi-date').value=fmtDate(new Date());
+  document.getElementById('screen-meta').classList.remove('hidden');
+  document.getElementById('le-txt').textContent='\u2014 no events yet \u2014';
+  document.getElementById('le-prev').textContent='';
+  document.getElementById('le-dot').classList.remove('show');
+  clearTimeout(qualT);clearTimeout(nudgeT);hideQual();hideNudge();
+  if(shortMode)toggleShort();
+  updateNavCounts();refreshAll();
+}
+function handlePause(){
+  if(state.gameFlow!=='first_half'&&state.gameFlow!=='second_half'){toast('Only during active play');return;}
+  if(state.pausedAt!==null){
+    var d=Date.now()-state.pausedAt;
+    if(state.gameFlow==='first_half')state.fhPausedMs+=d;else state.shPausedMs+=d;
+    state.pausedAt=null;lsSet(SSK,JSON.stringify(state));refreshAll();toast('Resumed');
+  }else{
+    showConfirm('Pause','Pause the match clock?',doPause,false);
+  }
+}
+function doPause(){state.pausedAt=Date.now();lsSet(SSK,JSON.stringify(state));refreshAll();toast('Paused');}
+
+/* ── Refresh helpers ── */
+function refreshAll(){refreshScore();refreshFlowBtn();refreshPauseBtn();}
+function refreshFlowBtn(){
+  var cfgs={
+    pre:{ic:'\u25B6',lb:'Start',bg:'rgba(0,230,118,.12)',bc:'rgba(0,230,118,.45)',c:'var(--green)'},
+    first_half:{ic:'\u23F8',lb:'Half',bg:'rgba(255,171,64,.12)',bc:'rgba(255,171,64,.5)',c:'var(--amber)'},
+    half_time:{ic:'\u25B6',lb:'2nd Half',bg:'rgba(0,212,255,.12)',bc:'rgba(0,212,255,.5)',c:'var(--accent)'},
+    second_half:{ic:'\u23F9',lb:'End',bg:'rgba(255,61,90,.12)',bc:'rgba(255,61,90,.5)',c:'var(--red)'},
+    ended:{ic:'\u2295',lb:'New',bg:'rgba(107,122,153,.08)',bc:'rgba(107,122,153,.3)',c:'var(--text-dim)'}
+  };
+  var cfg=cfgs[state.gameFlow]||cfgs.pre;
+  var b=document.getElementById('tb-flow');
+  document.getElementById('tb-flow-ic').textContent=cfg.ic;
+  document.getElementById('tb-flow-lbl').textContent=cfg.lb;
+  b.style.background=cfg.bg;b.style.borderColor=cfg.bc;b.style.color=cfg.c;
+}
+function refreshPauseBtn(){
+  var can=state.gameFlow==='first_half'||state.gameFlow==='second_half';
+  var b=document.getElementById('tb-pause');
+  b.style.opacity=can?'1':'0.35';b.style.pointerEvents=can?'all':'none';
+  if(state.pausedAt){
+    document.getElementById('tb-pause-ic').textContent='\u25B6';
+    document.getElementById('tb-pause-lbl').textContent='Resume';
+    b.style.background='rgba(0,230,118,.12)';b.style.borderColor='rgba(0,230,118,.45)';b.style.color='var(--green)';
+  }else{
+    document.getElementById('tb-pause-ic').textContent='\u23F8';
+    document.getElementById('tb-pause-lbl').textContent='Pause';
+    b.style.background='rgba(255,171,64,.12)';b.style.borderColor='rgba(255,171,64,.4)';b.style.color='var(--amber)';
+  }
+}
+function refreshScore(){
+  var gU=cnt('Goal \u2013 Us'),pU=cnt('Point \u2013 Play (Us)')+cnt('Point \u2013 Free (Us)');
+  var gT=cnt('Goal \u2013 Them'),pT=cnt('Point \u2013 Play (Them)')+cnt('Point \u2013 Free (Them)');
+  document.getElementById('sc-us').textContent=gU+'-'+pad(pU);
+  document.getElementById('sc-us-p').textContent=gU*3+pU;
+  document.getElementById('sc-th').textContent=gT+'-'+pad(pT);
+  document.getElementById('sc-th-p').textContent=gT*3+pT;
+}
+function cnt(k){return counts[k]||0;}
+
+/* ── Log event ── */
+function doTap(kpi,col,zone){
+  if(!kpi)return;
+  if(state.pausedAt!==null){toast('Paused \u2014 tap Resume first');return;}
+  if(state.gameFlow==='half_time'){toast('Half Time \u2014 tap 2nd Half');return;}
+  if(state.gameFlow==='ended'){toast('Full Time');return;}
+  if(state.gameFlow==='pre'){doStartGame();}
+  if(KPIS.indexOf(kpi)===-1){toast('Unknown event');return;}
+
+  var now=Date.now();
+  var secs=getMatchSecs(now);
+  var halfSecs=(state.gameFlow==='second_half')?secs-1800:secs;
+  if(halfSecs<0)halfSecs=0;
+  var q=getQuarter(state.gameFlow==='second_half'?(secs-1800):secs);
+  var ts='Q'+q+' '+pad(Math.floor(halfSecs/60))+':'+pad(halfSecs%60);
+  var ev={kpi:kpi,ts:now,quarter:q,time:ts};
+  if(zone)ev.zone=zone;
+  eventLog.push(ev);
+  lsSet(SK,JSON.stringify(eventLog));
+  counts[kpi]=(counts[kpi]||0)+1;
+
+  try{if(navigator.vibrate)navigator.vibrate(22);}catch(ex){}
+  refreshScore();updateNavCounts();
+  var displayKpi=zone?(kpi+' \u00B7 '+zone):kpi;
+  updateLE(displayKpi,col||KPI_COL[kpi]||'#6b7a99');
+  afterShot(kpi);
 }
 
-function csv(){
-  var q=function(s){ return '"'+String(s==null?'':s).replace(/"/g,'""')+'"'; };
-  var L=[];
-  L.push('Match Metadata,,,,,,');
-  L.push('Opposition,'+q(S.meta.them));
-  L.push('Competition,'+q(S.meta.comp));
-  L.push('Venue,'+q(S.meta.venue));
-  L.push('Date,'+q(S.meta.date));
-  L.push('');
-  L.push('Event Log,,,,,,');
-  L.push('Event,Quarter,MatchTime,Timestamp_ms,Possession,Zone,PassageID');
-  S.log.forEach(function(e){ L.push([q(e.kpi),e.q,q(e.time),e.ts,e.poss,e.zone,e.chain].join(',')); });
-  L.push('');
-  L.push('KPI Summary,,,,,');
-  L.push('KPI,Q1,Q2,Q3,Q4,Total');
-  KPIS.forEach(function(k){
-    var qq=[1,2,3,4].map(function(n){
-      var c=0; for(var i=0;i<S.log.length;i++) if(S.log[i].kpi===k && S.log[i].q===n) c++;
-      return c;
-    });
-    L.push(q(k)+','+qq.join(',')+','+(qq[0]+qq[1]+qq[2]+qq[3]));
-  });
-  var str = L.join('\n');
-  var fn = 'gaa_'+String(S.meta.them).replace(/\W+/g,'_')+'_'+String(S.meta.date).replace(/\W+/g,'_')+'.csv';
+/* ── v3: shot qualifiers and the restart nudge ── */
+function isShotKpi(k){return /^(Point|Miss|Goal)/.test(k);}
+function isMissKpi(k){return k.indexOf('Miss \u2013')===0||k.indexOf('Goal Chance')===0;}
+function isFreeShot(k){return k.indexOf('Point \u2013 Free')===0||k.indexOf('Miss \u2013 Free')===0;}
 
-  /* iOS standalone PWAs silently drop a.download. Web Share is the only
-     reliable way off the phone — this is exactly what v2 did. */
-  if(navigator.share && navigator.canShare){
-    try{
-      var file = new File([str], fn, {type:'text/csv'});
-      if(navigator.canShare({files:[file]})){
-        navigator.share({files:[file], title:'GAA Stats'})
-          .then(function(){ toast(S.log.length+' events shared'); })
-          .catch(function(){ dl(str, fn); });
+function afterShot(kpi){
+  clearTimeout(qualT);clearTimeout(nudgeT);
+  if(!isShotKpi(kpi)){hideQual();hideNudge();return;}
+  var chips=[];
+  if(isFreeShot(kpi))chips.push({q:'65',cls:'q65',lb:'Was a 65'});
+  if(isMissKpi(kpi)){
+    chips.push({q:'Short',cls:'',lb:'Short'});
+    chips.push({q:'Saved',cls:'',lb:'Saved'});
+    chips.push({q:'Blocked',cls:'',lb:'Blocked'});
+  }
+  if(chips.length){
+    var hd=isMissKpi(kpi)?'Wide unless you say otherwise':'Placed ball';
+    showQual(hd,chips);
+    qualT=setTimeout(hideQual,9000);
+  } else hideQual();
+  /* Dead ball \u2192 a restart is owed. Misses default to wide, i.e. dead. */
+  showNudge(isMissKpi(kpi)?'Wide \u2014 log the restart':'Score \u2014 log the restart');
+  nudgeT=setTimeout(hideNudge,9000);
+}
+
+function showQual(hd,chips){
+  document.getElementById('qs-hd').textContent=hd;
+  var row=document.getElementById('qs-row'),html='';
+  for(var i=0;i<chips.length;i++)html+='<div class="qch '+chips[i].cls+'" data-q="'+esc(chips[i].q)+'">'+esc(chips[i].lb)+'</div>';
+  row.innerHTML=html;
+  var cs=row.querySelectorAll('.qch');
+  for(var j=0;j<cs.length;j++){
+    (function(c){
+      function fire(e){e.stopPropagation();e.preventDefault();applyQual(c.getAttribute('data-q'));}
+      c.addEventListener('touchstart',fire,{passive:false});
+      c.addEventListener('click',fire);
+    })(cs[j]);
+  }
+  document.getElementById('qstrip').classList.add('show');
+}
+function hideQual(){document.getElementById('qstrip').classList.remove('show');}
+function showNudge(t){document.getElementById('nudge-txt').textContent=t;document.getElementById('nudge').classList.add('show');}
+function hideNudge(){document.getElementById('nudge').classList.remove('show');}
+
+function applyQual(q){
+  if(!eventLog.length)return;
+  var last=eventLog[eventLog.length-1];
+  if(!isShotKpi(last.kpi))return;
+  last.qual=q;
+  lsSet(SK,JSON.stringify(eventLog));
+  try{if(navigator.vibrate)navigator.vibrate(14);}catch(ex){}
+  updateLE(last.kpi+'  \u00B7  '+q,q==='65'?'#b388ff':'#ffab40');
+  hideQual();clearTimeout(qualT);clearTimeout(nudgeT);
+  /* Short, saved or blocked = ball stayed live: no restart follows. A 65 is dead. */
+  if(q==='65'){showNudge('65 awarded \u2014 log the shot when taken');nudgeT=setTimeout(hideNudge,9000);}
+  else hideNudge();
+}
+
+function toggleShort(){
+  shortMode=!shortMode;
+  document.getElementById('tog-short').classList.toggle('on',shortMode);
+}
+
+/* ── v3: wire the capture grid ── */
+function setupCapture(){
+  var btns=document.querySelectorAll('#cap .ebtn');
+  for(var i=0;i<btns.length;i++){
+    (function(btn){
+      if(btn.id==='btn-more'){
+        function fireMore(e){e.stopPropagation();e.preventDefault();openSub('more');}
+        btn.addEventListener('touchstart',fireMore,{passive:false});
+        btn.addEventListener('click',fireMore);
         return;
       }
-    }catch(e){}
+      function fire(e){
+        e.stopPropagation();e.preventDefault();
+        var kpi=btn.getAttribute('data-kpi');
+        var po=btn.getAttribute('data-po');
+        if(po){
+          kpi=po+' \u2013 '+(shortMode?'Short':'Long');
+          if(shortMode)toggleShort();
+        }
+        doTap(kpi,KPI_COL[kpi]||null,null);
+      }
+      btn.addEventListener('touchstart',fire,{passive:false});
+      btn.addEventListener('click',fire);
+    })(btns[i]);
   }
-  dl(str, fn);
-}
-function dl(str, fn){
-  try{
-    var b=new Blob([str],{type:'text/csv;charset=utf-8;'});
-    var a=document.createElement('a');
-    a.href=URL.createObjectURL(b); a.download=fn;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    toast(S.log.length+' events \u00b7 KPI summary included');
-  }catch(e){ toast('Export failed \u2014 screenshot the stats screen'); }
+  var t=document.getElementById('tog-short');
+  function fireTog(e){e.stopPropagation();e.preventDefault();toggleShort();}
+  t.addEventListener('touchstart',fireTog,{passive:false});
+  t.addEventListener('click',fireTog);
 }
 
-
-/* ── Live readings — the half-time tool. Same maths as HANDOVER_Match_Report.md:
-      ball share = contested wins + puck-out wins over contested + puck-outs.
-      expected   = 50 + 2 x (ball - 52).   Cashing-In = shot share - expected. ── */
-function cq(k, qs){ var n=0; for(var i=0;i<S.log.length;i++) if(S.log[i].kpi===k && qs.indexOf(S.log[i].q)>-1) n++; return n; }
-function pc(w,l){ return (w+l) ? Math.round(100*w/(w+l)) : null; }
-function fmt(v){ return v===null ? '\u2014' : v+'%'; }
-
-function readings(qs){
-  var c=function(k){ return cq(k,qs); };
-  var olw=c('Our PO \u2013 We Win \u2013 Long'),  oll=c('Our PO \u2013 We Lose \u2013 Long');
-  var ows=c('Our PO \u2013 We Win \u2013 Short'), ols=c('Our PO \u2013 We Lose \u2013 Short');
-  var tlw=c('Their PO \u2013 We Win \u2013 Long'),  tll=c('Their PO \u2013 We Lose \u2013 Long');
-  var tws=c('Their PO \u2013 We Win \u2013 Short'), tls=c('Their PO \u2013 We Lose \u2013 Short');
-  var Z=['Attack','Mid','Def'];
-  var cw=0, cl=0, zone={};
-  Z.forEach(function(z){
-    var w=c(z+' \u2013 Contested Win'), l=c(z+' \u2013 Contested Loss');
-    cw+=w; cl+=l; zone[z]=[w,l];
-  });
-  var fw=c('Free Won'), fl=c('Free Lost');
-  var bw=cw+olw+ows+tlw+tws, bl=cl+oll+ols+tll+tls;
-  var ball = (bw+bl) ? 100*bw/(bw+bl) : 52;
-  var su=c('Point \u2013 Play (Us)')+c('Miss \u2013 Play (Us)')+c('Point \u2013 Free (Us)')+c('Miss \u2013 Free (Us)')+c('Point \u2013 65 (Us)')+c('Miss \u2013 65 (Us)')+c('Goal \u2013 Us')+c('Goal Chance \u2013 Us');
-  var st=c('Point \u2013 Play (Them)')+c('Miss \u2013 Play (Them)')+c('Point \u2013 Free (Them)')+c('Miss \u2013 Free (Them)')+c('Point \u2013 65 (Them)')+c('Miss \u2013 65 (Them)')+c('Goal \u2013 Them')+c('Goal Chance \u2013 Them');
-  var ss = (su+st) ? 100*su/(su+st) : 50;
-  var exp = 50 + 2*(ball-52);
-  var pp=c('Point \u2013 Play (Us)'),  mp=c('Miss \u2013 Play (Us)');
-  var tpp=c('Point \u2013 Play (Them)'), tmp=c('Miss \u2013 Play (Them)');
-  var gu=c('Goal \u2013 Us'), gt=c('Goal \u2013 Them');
-  var upts=pp+c('Point \u2013 Free (Us)')+c('Point \u2013 65 (Us)');            // scoreboard points, us  (play + free + 65)
-  var tpts=tpp+c('Point \u2013 Free (Them)')+c('Point \u2013 65 (Them)');       // scoreboard points, them
-  return {olw:olw, oll:oll, po:pc(olw,oll), cw:cw, cl:cl, cb:pc(cw,cl),
-          tlw:tlw, tll:tll, steal:pc(tlw,tll), fw:fw, fl:fl, ga:gt,
-          zone:zone, play:pc(pp,mp), pps:pp+mp, tplay:pc(tpp,tmp), tpps:tpp+tmp,
-          gu:gu, upts:upts, gt:gt, tpts:tpts, gc:c('Goal Chance \u2013 Us'),
-          ball:Math.round(ball), ss:Math.round(ss), exp:Math.round(exp),
-          ci:Math.round(ss-exp), su:su, st:st};
+function updateLE(kpi,col){
+  var prev=document.getElementById('le-txt').textContent;
+  if(prev&&prev!=='\u2014 no events yet \u2014')document.getElementById('le-prev').textContent='\u21A9 '+prev;
+  document.getElementById('le-txt').textContent=kpi;
+  var dot=document.getElementById('le-dot');
+  dot.style.background=col||'#6b7a99';
+  dot.classList.add('show');
 }
 
-function light(ok, near){ return ok ? '\u{1F7E2}' : (near ? '\u{1F7E1}' : '\u{1F534}'); }
+/* ── Undo ── */
+function handleUndo(){
+  if(!eventLog.length){toast('Nothing to undo');return;}
+  var last=eventLog[eventLog.length-1];
+  showConfirm('Undo Last Event','Undo: '+last.kpi+(last.qual?' \u00B7 '+last.qual:'')+' @ '+last.time+'?',doUndo,false);
+}
+function doUndo(){
+  if(!eventLog.length)return;
+  var last=eventLog.pop();
+  lsSet(SK,JSON.stringify(eventLog));
+  counts[last.kpi]=Math.max(0,(counts[last.kpi]||1)-1);
+  refreshScore();updateNavCounts();
+  clearTimeout(qualT);clearTimeout(nudgeT);hideQual();hideNudge();
+  if(eventLog.length>0){
+    var prev=eventLog[eventLog.length-1];
+    var d=prev.qual?(prev.kpi+'  \u00B7  '+prev.qual):prev.kpi;
+    updateLE(d,KPI_COL[prev.kpi]||'#6b7a99');
+  }else{
+    document.getElementById('le-txt').textContent='\u2014 no events yet \u2014';
+    document.getElementById('le-dot').classList.remove('show');
+    document.getElementById('le-prev').textContent='';
+  }
+  toast('Undone: '+last.kpi);
+}
 
+/* ── Stats screen ── */
 function openStats(){
-  var H1=readings([1,2]), H2=readings([3,4]), F=readings([1,2,3,4]);
-  var showH2 = S.flow==='h2' || S.flow==='ended';
-  var cols = showH2 ? [['1st',H1],['2nd',H2],['Full',F]] : [['1st half',H1]];
+  var gU=cnt('Goal \u2013 Us'),pU=cnt('Point \u2013 Play (Us)')+cnt('Point \u2013 Free (Us)');
+  var gT=cnt('Goal \u2013 Them'),pT=cnt('Point \u2013 Play (Them)')+cnt('Point \u2013 Free (Them)');
+  document.getElementById('sh-us-gaa').textContent=gU+'-'+pad(pU);
+  document.getElementById('sh-us-pts').textContent=(gU*3+pU)+' pts';
+  document.getElementById('sh-th-gaa').textContent=gT+'-'+pad(pT);
+  document.getElementById('sh-th-pts').textContent=(gT*3+pT)+' pts';
+  var parts=[];
+  if(meta.opposition&&meta.opposition!=='\u2014')parts.push('vs '+meta.opposition);
+  if(meta.competition&&meta.competition!=='\u2014')parts.push(meta.competition);
+  document.getElementById('sh-meta').textContent=parts.join(' \u00B7 ')||'';
+  statQ='match';
+  document.querySelectorAll('#stat-qpills .qpill').forEach(function(p){p.classList.toggle('active',p.getAttribute('data-q')==='match');});
+  statTab='snap';
+  document.querySelectorAll('.stab').forEach(function(t){t.classList.toggle('active',t.getAttribute('data-st')==='snap');});
+  renderStats();
+  document.getElementById('screen-stats').classList.add('open');
+}
+function closeStats(){document.getElementById('screen-stats').classList.remove('open');}
+function setStatQ(el){
+  document.querySelectorAll('#stat-qpills .qpill').forEach(function(p){p.classList.remove('active');});
+  el.classList.add('active');statQ=el.getAttribute('data-q');renderStats();
+}
+function setStatTab(el){
+  document.querySelectorAll('.stab').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');statTab=el.getAttribute('data-st');renderStats();
+}
+function getQs(q){return q==='match'?[1,2,3,4]:[parseInt(q,10)];}
+function cntQ(kpi,qs){var n=0;for(var i=0;i<eventLog.length;i++){var e=eventLog[i];if(e.kpi===kpi&&qs.indexOf(e.quarter)>-1)n++;}return n;}
 
-  var shoot = function(v){ return v===null ? '\u2014' : (v>=70?'\u{1F525} ':v<55?'\u2744\uFE0F ':'')+v+'%'; };
-  var rows = [
-    ['GRP','Win the ball',null],
-    ['Our long puck-out','55%+', function(r){ return r.po===null?'\u2014':light(r.po>=55, r.po>=48)+' '+r.po+'% ('+r.olw+'W '+r.oll+'L)'; }],
-    ['\u{1F3AF} Steal their long','50%+', function(r){ return r.steal===null?'\u2014':light(r.steal>=50, r.steal>=45)+' '+r.steal+'% ('+r.tlw+'W '+r.tll+'L)'; }],
-    ['Contested ball','50%+',    function(r){ return r.cb===null?'\u2014':light(r.cb>=50, r.cb>=45)+' '+r.cb+'% ('+r.cw+'W '+r.cl+'L)'; }],
-    ['Attack contested','50%+',  function(r){ var z=r.zone.Attack; return fmt(pc(z[0],z[1]))+' ('+z[0]+'W '+z[1]+'L)'; }],
-    ['Mid contested','50%+',     function(r){ var z=r.zone.Mid;    return fmt(pc(z[0],z[1]))+' ('+z[0]+'W '+z[1]+'L)'; }],
-    ['Def contested','50%+',     function(r){ var z=r.zone.Def;    return fmt(pc(z[0],z[1]))+' ('+z[0]+'W '+z[1]+'L)'; }],
-    ['Ball share','\u2014',      function(r){ return r.ball+'%'; }],
-    ['GRP','Shots \u0026 scores',null],
-    ['Shot share (exp)','\u2014', function(r){ return r.ss+'% ('+r.exp+'%)'; }],
-    ['Shots (us v them)','\u2014', function(r){ return r.su+' v '+r.st; }],
-    ['Scores (us v them)','\u2014', function(r){ return (r.gu+r.upts)+' v '+(r.gt+r.tpts); }],
-    ['Shooting play (us v them)','\u2014', function(r){ return shoot(r.play)+' v '+shoot(r.tplay); }],
-    ['GRP','Frees',null],
-    ['Frees (won \u2212 lost)','0+', function(r){ var n=r.fw-r.fl; return light(n>=0, n>=-1)+' '+(n>0?'+':'')+n+' ('+r.fw+'W '+r.fl+'L)'; }],
-    ['GRP','Goals',null],
-    ['Goals against','\u22641/half', function(r){ return light(r.ga<=1, r.ga<=2)+' '+r.ga; }],
-    ['Our goal chances','\u2014', function(r){ return ''+r.gc; }]
-  ];
-
-  var h = '<table class="rt"><thead><tr><th>Reading</th><th>Target</th>';
-  cols.forEach(function(c){ h += '<th>'+c[0]+'</th>'; });
-  h += '</tr></thead><tbody>';
-  rows.forEach(function(r){
-    if(r[0]==='SEP'){ h += '<tr class="sp"><td colspan="'+(2+cols.length)+'"></td></tr>'; return; }
-    if(r[0]==='GRP'){ h += '<tr class="gh"><td colspan="'+(2+cols.length)+'">'+r[1]+'</td></tr>'; return; }
-    h += '<tr><td>'+r[0]+'</td><td class="tg">'+r[1]+'</td>';
-    cols.forEach(function(c){ h += '<td class="vv">'+r[2](c[1])+'</td>'; });
-    h += '</tr>';
-  });
-  h += '</tbody></table>';
-
-  document.getElementById('sc-body').innerHTML = h;
-  document.getElementById('stats').classList.add('on');
+function renderStats(){
+  try{
+    var qs=getQs(statQ),c=function(k){return cntQ(k,qs);};
+    if(statTab==='snap')renderSnapTab(qs);
+    else if(statTab==='raw')renderRawTab(c);
+    else if(statTab==='ht')renderHtTab();
+  }catch(e){document.getElementById('stats-content').innerHTML='<div style="padding:20px;color:var(--red);">Error rendering stats.</div>';}
 }
 
-var tt;
-function toast(m){ var e=document.getElementById('toast'); e.textContent=m; e.classList.add('on');
-  clearTimeout(tt); tt=setTimeout(function(){ e.classList.remove('on'); },1500); }
+function snLight(ok,near){return ok?'\u{1F7E2}':(near?'\u{1F7E1}':'\u{1F534}');}
+function znLight(v){return v===null?'':(v>55?'\u{1F7E2}':(v>=45?'\u{1F7E1}':'\u{1F534}'));}
+/* Our long puck-out: target 55%+, band >60 / 50-60 / <50 (Match_Report_TEMPLATE.md) */
+function poLight(v){return v===null?'':(v>60?'\u{1F7E2}':(v>=50?'\u{1F7E1}':'\u{1F534}'));}
+/* Goals against rescales by period: full match target <=2, single quarter <=1 */
+function gaLight(n,full){return full?(n<=2?'\u{1F7E2}':(n===3?'\u{1F7E1}':'\u{1F534}')):(n<=1?'\u{1F7E2}':(n===2?'\u{1F7E1}':'\u{1F534}'));}
+/* Highest quarter with any event logged - 0 if none */
+function maxQ(){var m=0;for(var i=0;i<eventLog.length;i++)if(eventLog[i].quarter>m)m=eventLog[i].quarter;return m;}
+/* Shots per quarter, us v them - always all played quarters, regardless of filter */
+function shotsQ(){
+  var K=['Point \u2013 Play (','Miss \u2013 Play (','Point \u2013 Free (','Miss \u2013 Free (','Goal \u2013 ','Goal Chance \u2013 '];
+  var out=[],seen={};
+  for(var i=0;i<eventLog.length;i++)seen[eventLog[i].quarter]=1;
+  for(var q=1;q<=4;q++){
+    if(!seen[q])continue;
+    var u=0,t=0;
+    for(var k=0;k<K.length;k++){
+      var pre=K[k],us=(pre.slice(-1)==='(')?pre+'Us)':pre+'Us',th=(pre.slice(-1)==='(')?pre+'Them)':pre+'Them';
+      u+=cntQ(us,[q]);t+=cntQ(th,[q]);
+    }
+    out.push({q:q,u:u,t:t});
+  }
+  return out;
+}
+function snPct(v){return v===null?'\u2014':v+'%';}
+function lateFrees(qs){
+  var secs=function(t){var m=/(\d+):(\d+)\s*$/.exec(t||'');return m?(+m[1]*60+ +m[2]):null;};
+  var win=[],mx=null;
+  for(var i=0;i<eventLog.length;i++){
+    var e=eventLog[i];if(qs.indexOf(e.quarter)<0)continue;
+    var t=secs(e.time);if(t===null)continue;
+    win.push({k:e.kpi,t:t});if(mx===null||t>mx)mx=t;
+  }
+  if(mx===null)return null;
+  var cut=mx-600,fl=0,sc=0;
+  for(var j=0;j<win.length;j++){
+    if(win[j].t<cut)continue;
+    if(win[j].k==='Free Lost')fl++;
+    if(win[j].k==='Point \u2013 Free (Them)'||win[j].k==='Point \u2013 Play (Them)'||win[j].k==='Goal \u2013 Them')sc++;
+  }
+  return {fl:fl,sc:sc,mins:Math.min(10,Math.round(mx/60))};
+}
+function renderSnapTab(qs){
+  var r=htReadings(qs),c=function(k){return cntQ(k,qs);};
+  var L=function(k,v){return '<div class="sn-line"><span class="sn-k">'+k+'</span><span class="sn-v">'+v+'</span></div>';};
+  var uFr=r.ufp+r.umf,tFr=r.tfp+r.tmf;
+  var uSh=r.pps+uFr+r.gu,tSh=r.tpps+tFr+r.gt;
+  var uSc=r.gu+r.upts,tSc=r.gt+r.tpts;
+  var uCv=uSh?Math.round(100*uSc/uSh):null,tCv=tSh?Math.round(100*tSc/tSh):null;
+  var uFa=uFr?Math.round(100*r.ufp/uFr):null,tFa=tFr?Math.round(100*r.tfp/tFr):null;
+  var lf=lateFrees(qs);
+  /* "Full game" means the whole match view AND the second half has started.
+     At half time the match view is really a half, so it keeps the half targets. */
+  var full=(qs.length===4&&maxQ()>=3);
+  var h='';
 
-document.querySelectorAll('[data-c]').forEach(function(b){
-  var p=b.dataset.c.split('|'); b.onclick=function(){ contest(p[0],p[1]); };
-});
-document.querySelectorAll('[data-f]').forEach(function(b){ b.onclick=function(){ free(b.dataset.f); }; });
-document.querySelectorAll('[data-six]').forEach(function(b){ b.onclick=function(){ sixtyfive(b.dataset.six); }; });
-document.querySelectorAll('[data-s]').forEach(function(b){
-  var p=b.dataset.s.split('|'); b.onclick=function(){ shot(p[0],p[1]); };
-});
-document.querySelectorAll('[data-gc]').forEach(function(b){ b.onclick=function(){ chance(b.dataset.gc); }; });
-document.getElementById('flow').onclick  = flowNext;
-document.getElementById('pause').onclick = togglePause;
-document.getElementById('stat').onclick  = openStats;
-document.getElementById('sc-x').onclick  = function(){ document.getElementById('stats').classList.remove('on'); };
-document.getElementById('cf-n').onclick  = function(){ document.getElementById('cf').classList.remove('on'); };
-document.getElementById('undo').onclick  = undo;
-document.getElementById('csv').onclick=csv;
-document.getElementById('po-s').onclick=function(){ closePO(); toast('Puck-out skipped'); };
-document.getElementById('m-go').onclick=function(){
-  var v=function(i){ return (document.getElementById(i).value||'').trim(); };
-  S.meta.them=v('m-o')||'Opposition'; S.meta.comp=v('m-c')||'\u2014';
-  S.meta.venue=v('m-v')||'\u2014'; S.meta.date=v('m-d')||new Date().toDateString();
-  save(); document.getElementById('setup').classList.remove('on'); render();
-};
-document.addEventListener('gesturestart', function(e){ e.preventDefault(); });
+  h+='<div class="sn-score"><div class="sn-sl">'+esc(r.sl)+'</div><div class="sn-sm '+(r.marg>0?'sn-up':(r.marg<0?'sn-dn':''))+'">'
+    +(r.marg>0?'+':'')+r.marg+' pts \u00B7 score share '+snPct(r.scs)+'</div></div>';
 
-load();
-document.getElementById('m-d').value = new Date().toDateString();
-if(!S.log.length && S.meta.them === 'Opposition') document.getElementById('setup').classList.add('on');
-render(); tick(); setInterval(tick, 500);
+  h+='<div class="sn-grp">Ball wins</div><div class="sn-card">';
+  h+=L('Puckouts \u2014 ours',(r.po===null?'\u2014':poLight(r.po)+' '+r.po+'%'));
+  h+=L('Puckouts \u2014 steal theirs',(r.steal===null?'\u2014':znLight(r.steal)+' '+r.steal+'%'));
+  h+=L('Contested ball',(r.cb===null?'\u2014':znLight(r.cb)+' (Def '+znLight(htPc(r.zone.Def[0],r.zone.Def[1]))
+    +' Mid '+znLight(htPc(r.zone.Mid[0],r.zone.Mid[1]))+' Att '+znLight(htPc(r.zone.Attack[0],r.zone.Attack[1]))+')'));
+  h+=L('Overall ball win',(r.ball===null?'\u2014':snLight(r.ball>=52,r.ball>=48)+' '+r.ball+'%'));
+  h+='<div class="sn-note">Indicator only \u2014 contested sample.</div></div>';
+
+  h+='<div class="sn-grp">Ball \u2192 shot</div><div class="sn-card">';
+  h+=L('Ball wins',(r.ball===null?'\u2014':r.ball+'%'));
+  var slit=(full&&r.ball!==null&&r.ss!==null)?snLight(r.ss>=r.ball,r.ss>=r.ball-5)+' ':'';
+  h+=L('\u21b3 Shot share',(r.ss===null?'\u2014':slit+r.ss+'%'));
+  var bd=function(pl,fr,g,gc){
+    var p=[pl+' from play',fr+' from frees'];
+    if(g)p.push(g+' goal'+(g===1?'':'s'));
+    if(gc)p.push(gc+' goal chance'+(gc===1?'':'s'));
+    return p.join(', ');
+  };
+  if(r.su||r.st){
+    h+='<div class="sn-note">'+r.su+' shots'+(r.ball===null?'':' off '+r.ball+'% of the ball')+': '+bd(r.pps,uFr,r.gu,r.gc)+'.</div>';
+    h+='<div class="sn-note">They have '+r.st+' shots'+(r.ball===null?'':' off '+(100-r.ball)+'%')+': '+bd(r.tpps,tFr,r.gt,r.gct)+'.</div>';
+  }
+  if(r.ball===null)h+='<div class="sn-note">No puck-outs or contested ball logged yet \u2014 ball wins not measurable.</div>';
+  var sq=shotsQ();
+  if(sq.length){
+    h+='<div class="sn-qs">';
+    for(var qi=0;qi<sq.length;qi++){
+      var d=sq[qi],on=(qs.length===1&&qs[0]===d.q)?' on':'';
+      h+='<div class="sn-q'+on+'"><div class="sn-ql">Q'+d.q+'</div><div class="sn-qv">'+d.u+' <small>v</small> '+d.t+'</div></div>';
+    }
+    h+='</div><div class="sn-note">Shots per quarter, us v them \u2014 all quarters, not filtered.</div>';
+  }
+  h+='</div>';
+
+  h+='<div class="sn-grp">Shots \u2192 scores</div><div class="sn-card">';
+  h+=L('Conversion \u2014 us',snLight(uCv>=60,uCv>=50)+' '+snPct(uCv)+' ('+uSc+'/'+uSh+')');
+  h+='<div class="sn-note">Play '+snPct(r.play)+' ('+r.pp+'/'+r.pps+') \u00B7 frees '+snPct(uFa)+' ('+r.ufp+'/'+uFr+')</div>';
+  h+=L('Conversion \u2014 them',snPct(tCv)+' ('+tSc+'/'+tSh+')');
+  h+='<div class="sn-note">Play '+snPct(r.tplay)+' ('+r.tpp+'/'+r.tpps+') \u00B7 frees '+snPct(tFa)+' ('+r.tfp+'/'+tFr+')</div></div>';
+
+  h+='<div class="sn-grp">Goals</div><div class="sn-card">';
+  h+=L('Conceded',gaLight(r.gt,full)+' '+r.gt+' <small style="font-weight:600;color:var(--text-dim);">(target \u2264'+(full?2:1)+')</small>');
+  h+=L('Goal chances',snLight(r.gct<=r.gc,r.gct<=r.gc+1)+' '+r.gc+' v '+r.gct);
+  h+='</div>';
+
+  h+='<div class="sn-grp">Discipline</div><div class="sn-card">';
+  h+=L('Scores from frees conceded',snLight(r.tfp<=1,r.tfp<=2)+' '+r.tfp+' from '+tFr+' ('+r.fl+' total)');
+  h+=L('Frees won \u2192 our points',r.ufp+' from '+uFr+' ('+r.fw+' total)');
+  if(lf)h+='<div class="sn-note">Last '+lf.mins+' min: '+lf.fl+' free'+(lf.fl===1?'':'s')+' conceded, '+lf.sc+' score'+(lf.sc===1?'':'s')+' against.</div>';
+  h+='</div>';
+
+  document.getElementById('stats-content').innerHTML=h;
+}
+
+function renderKpiTab(c,qs){
+  var gU=c('Goal \u2013 Us'),ppU=c('Point \u2013 Play (Us)'),pfU=c('Point \u2013 Free (Us)');
+  var pmU=c('Miss \u2013 Play (Us)'),fmU=c('Miss \u2013 Free (Us)');
+  var gcU=c('Goal Chance \u2013 Us');
+  var shotsU=gU+ppU+pfU+pmU+fmU+gcU,scoresU=gU+ppU+pfU;
+  var playU=ppU+pmU,freesU=pfU+fmU;
+  var convU=shotsU?Math.round(scoresU/shotsU*100):null;
+  var playAccU=playU?Math.round(ppU/playU*100):null;
+  var freeAccU=freesU?Math.round(pfU/freesU*100):null;
+
+  var gT=c('Goal \u2013 Them'),ppT=c('Point \u2013 Play (Them)'),pfT=c('Point \u2013 Free (Them)');
+  var pmT=c('Miss \u2013 Play (Them)'),fmT=c('Miss \u2013 Free (Them)');
+  var gcT=c('Goal Chance \u2013 Them');
+  var shotsT=gT+ppT+pfT+pmT+fmT+gcT,scoresT=gT+ppT+pfT;
+  var playT=ppT+pmT,freesT=pfT+fmT;
+  var convT=shotsT?Math.round(scoresT/shotsT*100):null;
+  var playAccT=playT?Math.round(ppT/playT*100):null;
+  var freeAccT=freesT?Math.round(pfT/freesT*100):null;
+
+  var opWS=c('Our PO \u2013 We Win \u2013 Short'),opWL=c('Our PO \u2013 We Win \u2013 Long');
+  var opLS=c('Our PO \u2013 We Lose \u2013 Short'),opLL=c('Our PO \u2013 We Lose \u2013 Long');
+  var opW=opWS+opWL,opL=opLS+opLL;
+  var tpWS=c('Their PO \u2013 We Win \u2013 Short'),tpWL=c('Their PO \u2013 We Win \u2013 Long');
+  var tpLS=c('Their PO \u2013 We Lose \u2013 Short'),tpLL=c('Their PO \u2013 We Lose \u2013 Long');
+  var tpW=tpWS+tpWL,tpL=tpLS+tpLL;
+  var opPct=opW+opL?Math.round(opW/(opW+opL)*100):null;
+  var tpPct=tpW+tpL?Math.round(tpW/(tpW+tpL)*100):null;
+
+  var aFP=c('Attack \u2013 Favorable Pass'),aRT=c('Attack \u2013 Run Thru 45');
+  var aCW=c('Attack \u2013 Contested Win'),aCL=c('Attack \u2013 Contested Loss'),aUT=c('Attack \u2013 Unforced Turnover');
+  var aTotal=aFP+aRT+aCW+aCL+aUT;
+  var aCBPct=aCW+aCL?Math.round(aCW/(aCW+aCL)*100):null;
+
+  var mF=c('Mid \u2013 Favorable'),mCW=c('Mid \u2013 Contested Win'),mCL=c('Mid \u2013 Contested Loss'),mUL=c('Mid \u2013 Unforced Loss'),mR=c('Mid \u2013 Reset');
+  var mWPct=mCW+mCL?Math.round(mCW/(mCW+mCL)*100):null;
+
+  var dOF=c('Def \u2013 Opp Favorable'),dCW=c('Def \u2013 Contested Win'),dCL=c('Def \u2013 Contested Loss'),dOUT=c('Def \u2013 Opp Unforced Turnover');
+  var dWPct=dCW+dCL?Math.round(dCW/(dCW+dCL)*100):null;
+
+  var gc=c('Goal Chance \u2013 Us'),tw=c('Turnover Won');
+  var fW=c('Free Won'),fL=c('Free Lost'),card=c('Card for Us');
+
+  var html='';
+  html+='<div class="sec-lbl">Shooting</div><div class="paired-block">';
+  html+='<div class="paired-hdr"><div class="ph-us">Us</div><div class="ph-mid">Metric</div><div class="ph-them">Them</div></div>';
+  html+=mRow(esc(scoresU),(gU?esc(gU)+'g ':'')+esc(ppU+pfU)+'p',null,null,'Scores',esc(scoresT),(gT?esc(gT)+'g ':'')+esc(ppT+pfT)+'p',null,null);
+  html+=mRow(esc(shotsU),'',null,null,'Shots',esc(shotsT),'',null,null);
+  html+=mRow(convU!=null?esc(convU)+'%':'\u2014','',70,true,'Acc %',convT!=null?esc(convT)+'%':'\u2014','',null,null);
+  html+=mRow(playAccU!=null?esc(playAccU)+'%':'\u2014','',null,null,'Play %',playAccT!=null?esc(playAccT)+'%':'\u2014','',null,null);
+  html+=mRow(freeAccU!=null?esc(freeAccU)+'%':'\u2014','',null,null,'Free %',freeAccT!=null?esc(freeAccT)+'%':'\u2014','',null,null);
+  html+='</div>';
+
+  html+='<div class="sec-lbl">Puck Outs</div><div class="paired-block">';
+  html+='<div class="paired-hdr"><div class="ph-us">Our PO</div><div class="ph-mid">Win %</div><div class="ph-them">Their PO</div></div>';
+  html+=mRow(opPct!=null?esc(opPct)+'%':'\u2014',esc(opW)+'W \u00B7 '+esc(opL)+'L',70,true,'Win %',tpPct!=null?esc(tpPct)+'%':'\u2014',esc(tpW)+'W \u00B7 '+esc(tpL)+'L',50,true);
+  html+='<div class="metric-row"><div class="mr-us"><div class="mr-sub">S: '+esc(opWS)+'W \u00B7 '+esc(opLS)+'L</div><div class="mr-sub">L: '+esc(opWL)+'W \u00B7 '+esc(opLL)+'L</div></div><div class="mr-lbl">S/L Split</div><div class="mr-them"><div class="mr-sub">S: '+esc(tpWS)+'W \u00B7 '+esc(tpLS)+'L</div><div class="mr-sub">L: '+esc(tpWL)+'W \u00B7 '+esc(tpLL)+'L</div></div></div>';
+  html+='</div>';
+
+  html+='<div class="sec-lbl">Attack Zone</div><div class="solo-grid3">';
+  html+=soloCard('c-blue','Total',esc(aTotal),'entries',null,null);
+  html+=soloCard('c-blue','CB Win %',aCBPct!=null?esc(aCBPct)+'%':'\u2014',esc(aCW)+'W \u00B7 '+esc(aCL)+'L',50,true);
+  html+=soloCard('c-amber','Unforced T/O',esc(aUT),'turnovers',null,null);
+  html+='</div>';
+
+  html+='<div class="sec-lbl">Mid Zone</div><div class="solo-grid3">';
+  html+=soloCard('c-blue','Favorable',esc(mF),'clean ball',null,null);
+  html+=soloCard('c-blue','CB Win %',mWPct!=null?esc(mWPct)+'%':'\u2014',esc(mCW)+'W \u00B7 '+esc(mCL)+'L',50,true);
+  html+=soloCard('c-amber','Unforced',esc(mUL),'losses',null,null);
+  html+='</div>';
+
+  html+='<div class="sec-lbl">Def Zone</div><div class="solo-grid3">';
+  html+=soloCard('c-green','CB Win %',dWPct!=null?esc(dWPct)+'%':'\u2014',esc(dCW)+'W \u00B7 '+esc(dCL)+'L',50,true);
+  html+=soloCard('c-grey','Opp Fav',esc(dOF),'entries',null,null);
+  html+=soloCard('c-amber','Opp Unf T/O',esc(dOUT),'turnovers',null,null);
+  html+='</div>';
+
+  html+='<div class="sec-lbl">Discipline & Misc</div><div class="solo-grid3">';
+  html+=soloCard('c-purple','Frees Won',esc(fW),'',null,null);
+  html+=soloCard('c-grey','Frees Lost',esc(fL),'',null,null);
+  html+=soloCard('c-red','Cards',esc(card),'',null,null);
+  html+='</div><div class="solo-grid3">';
+  html+=soloCard('c-green','Goal Ch.',esc(gc),'chances',null,null);
+  html+=soloCard('c-green','T/O Won',esc(tw),'turnovers',null,null);
+  html+=soloCard('c-grey','Mid Reset',esc(mR),'resets',null,null);
+  html+='</div>';
+
+  document.getElementById('stats-content').innerHTML=html;
+}
+
+function mRow(uV,uS,uTgt,uHi,lbl,tV,tS,tTgt,tHi){
+  var uB='',tB='';
+  if(uTgt!=null){var uHit=uHi?safeFloat(uV)>=uTgt:safeFloat(uV)<=uTgt;uB='<span class="mr-tgt '+(uHit?'tgt-hit':'tgt-miss')+'">'+(uHi?'\u2265':'\u2264')+uTgt+'%</span>';}
+  if(tTgt!=null){var tHit=tHi?safeFloat(tV)>=tTgt:safeFloat(tV)<=tTgt;tB='<span class="mr-tgt '+(tHit?'tgt-hit':'tgt-miss')+'">'+(tHi?'\u2265':'\u2264')+tTgt+'%</span>';}
+  return '<div class="metric-row"><div class="mr-us"><div class="mr-val">'+uV+'</div><div class="mr-sub">'+uS+'</div>'+uB+'</div><div class="mr-lbl">'+esc(lbl)+'</div><div class="mr-them"><div class="mr-val">'+tV+'</div><div class="mr-sub">'+tS+'</div>'+tB+'</div></div>';
+}
+function soloCard(cls,lbl,val,sub,tgtV,tgtHi){
+  var th='';
+  if(tgtV!=null){var hit=tgtHi?safeFloat(val)>=tgtV:safeFloat(val)<=tgtV;th='<span class="mr-tgt '+(hit?'tgt-hit':'tgt-miss')+'">'+(tgtHi?'\u2265':'\u2264')+tgtV+'%</span>';}
+  return '<div class="solo-card '+esc(cls)+'"><div class="solo-lbl">'+esc(lbl)+'</div><div class="solo-val">'+val+'</div><div class="solo-sub">'+esc(sub)+'</div>'+th+'</div>';
+}
+
+function renderRawTab(c){
+  var groups=[
+    {lbl:'Shooting \u2014 Us',rows:[
+      {cls:'rg',lbl:'Point Play (Us)',kpi:'Point \u2013 Play (Us)'},{cls:'ry',lbl:'Miss Play (Us)',kpi:'Miss \u2013 Play (Us)'},
+      {cls:'rg',lbl:'Point Free (Us)',kpi:'Point \u2013 Free (Us)'},{cls:'ry',lbl:'Miss Free (Us)',kpi:'Miss \u2013 Free (Us)'},
+      {cls:'rg',lbl:'Goal (Us)',kpi:'Goal \u2013 Us'},{cls:'rg',lbl:'Goal Chance (Us)',kpi:'Goal Chance \u2013 Us'}
+    ]},
+    {lbl:'Shooting \u2014 Them',rows:[
+      {cls:'rr',lbl:'Point Play (Them)',kpi:'Point \u2013 Play (Them)'},{cls:'ro',lbl:'Miss Play (Them)',kpi:'Miss \u2013 Play (Them)'},
+      {cls:'rr',lbl:'Point Free (Them)',kpi:'Point \u2013 Free (Them)'},{cls:'ro',lbl:'Miss Free (Them)',kpi:'Miss \u2013 Free (Them)'},
+      {cls:'rr',lbl:'Goal (Them)',kpi:'Goal \u2013 Them'},{cls:'ro',lbl:'Goal Chance (Them)',kpi:'Goal Chance \u2013 Them'}
+    ]},
+    {lbl:'Our Puck Outs',rows:[
+      {cls:'rp',lbl:'Win Short',kpi:'Our PO \u2013 We Win \u2013 Short'},{cls:'rp',lbl:'Win Long',kpi:'Our PO \u2013 We Win \u2013 Long'},
+      {cls:'rr',lbl:'Lose Short',kpi:'Our PO \u2013 We Lose \u2013 Short'},{cls:'rr',lbl:'Lose Long',kpi:'Our PO \u2013 We Lose \u2013 Long'}
+    ]},
+    {lbl:'Their Puck Outs',rows:[
+      {cls:'rp',lbl:'Win Short',kpi:'Their PO \u2013 We Win \u2013 Short'},{cls:'rp',lbl:'Win Long',kpi:'Their PO \u2013 We Win \u2013 Long'},
+      {cls:'rr',lbl:'Lose Short',kpi:'Their PO \u2013 We Lose \u2013 Short'},{cls:'rr',lbl:'Lose Long',kpi:'Their PO \u2013 We Lose \u2013 Long'}
+    ]},
+    {lbl:'Attack Zone',rows:[
+      {cls:'rb',lbl:'Favorable Pass',kpi:'Attack \u2013 Favorable Pass'},{cls:'rb',lbl:'Run Thru 45',kpi:'Attack \u2013 Run Thru 45'},
+      {cls:'rb',lbl:'Contested Win',kpi:'Attack \u2013 Contested Win'},{cls:'rgr',lbl:'Contested Loss',kpi:'Attack \u2013 Contested Loss'},
+      {cls:'ro',lbl:'Unforced T/O',kpi:'Attack \u2013 Unforced Turnover'}
+    ]},
+    {lbl:'Mid Zone',rows:[
+      {cls:'rb',lbl:'Favorable',kpi:'Mid \u2013 Favorable'},{cls:'rb',lbl:'Contested Win',kpi:'Mid \u2013 Contested Win'},
+      {cls:'rgr',lbl:'Contested Loss',kpi:'Mid \u2013 Contested Loss'},{cls:'ro',lbl:'Unforced Loss',kpi:'Mid \u2013 Unforced Loss'},
+      {cls:'rgr',lbl:'Reset',kpi:'Mid \u2013 Reset'}
+    ]},
+    {lbl:'Def Zone',rows:[
+      {cls:'rgr',lbl:'Opp Favorable',kpi:'Def \u2013 Opp Favorable'},{cls:'rg',lbl:'Contested Win',kpi:'Def \u2013 Contested Win'},
+      {cls:'rgr',lbl:'Contested Loss',kpi:'Def \u2013 Contested Loss'},{cls:'ro',lbl:'Opp Unforced T/O',kpi:'Def \u2013 Opp Unforced Turnover'}
+    ]},
+    {lbl:'Discipline',rows:[
+      {cls:'rp',lbl:'Free Won',kpi:'Free Won'},{cls:'rgr',lbl:'Free Lost',kpi:'Free Lost'},
+      {cls:'rr',lbl:'Card for Us',kpi:'Card for Us'}
+    ]},
+    {lbl:'Misc',rows:[
+      {cls:'rg',lbl:'Turnover Won',kpi:'Turnover Won'}
+    ]}
+  ];
+  var html='';
+  for(var gi=0;gi<groups.length;gi++){
+    var g=groups[gi];
+    html+='<div class="raw-grp">'+esc(g.lbl)+'</div>';
+    for(var ri=0;ri<g.rows.length;ri++){
+      var r=g.rows[ri];
+      html+='<div class="raw-row '+esc(r.cls)+'"><div class="raw-dot"></div><div class="raw-lbl">'+esc(r.lbl)+'</div><div class="raw-val">'+esc(c(r.kpi))+'</div></div>';
+    }
+  }
+  document.getElementById('stats-content').innerHTML=html;
+}
+
+function renderHtTab(){
+  var showH2=(state.gameFlow==='second_half'||state.gameFlow==='ended');
+  var H1=htReadings([1,2]),H2=htReadings([3,4]),F=htReadings([1,2,3,4]);
+  var cols=showH2?[['1st',H1],['2nd',H2],['Full',F]]:[['1st half',H1]];
+  var shoot=function(v){return v===null?'\u2014':(v>=70?'\u{1F525} ':v<55?'\u2744\uFE0F ':'')+v+'%';};
+  var rows=[
+    /* Order mirrors the Snapshot tab: score, ball wins, ball->shot, shots->scores, goals, discipline */
+    ['GRP','Score',null],
+    ['Score','\u2014',function(r){return r.sl+' ('+(r.marg>0?'+':'')+r.marg+')';}],
+    ['Score share','\u2014',function(r){return r.scs===null?'\u2014':r.scs+'% ('+r.pfu+' v '+r.pft+' pts)';}],
+
+    ['GRP','Ball wins',null],
+    ['Puckouts \u2014 ours','55%+',function(r){return r.po===null?'\u2014':poLight(r.po)+' '+r.po+'% ('+r.olw+'W '+r.oll+'L)';}],
+    ['\u{1F3AF} Puckouts \u2014 steal theirs','50%+',function(r){return r.steal===null?'\u2014':znLight(r.steal)+' '+r.steal+'% ('+r.tlw+'W '+r.tll+'L)';}],
+    ['Contested ball','50%+',function(r){return r.cb===null?'\u2014':znLight(r.cb)+' '+r.cb+'% ('+r.cw+'W '+r.cl+'L)';}],
+    ['\u2003Attack contested','50%+',function(r){var z=r.zone.Attack,v=htPc(z[0],z[1]);return v===null?'\u2014':znLight(v)+' '+v+'% ('+z[0]+'W '+z[1]+'L)';}],
+    ['\u2003Mid contested','50%+',function(r){var z=r.zone.Mid,v=htPc(z[0],z[1]);return v===null?'\u2014':znLight(v)+' '+v+'% ('+z[0]+'W '+z[1]+'L)';}],
+    ['\u2003Def contested','50%+',function(r){var z=r.zone.Def,v=htPc(z[0],z[1]);return v===null?'\u2014':znLight(v)+' '+v+'% ('+z[0]+'W '+z[1]+'L)';}],
+    ['Overall ball win','\u2014',function(r){return r.ball===null?'\u2014':htLight(r.ball>=52,r.ball>=48)+' '+r.ball+'%';}],
+
+    ['GRP','Ball \u2192 shot',null],
+    ['Ball wins','\u2014',function(r){return r.ball===null?'\u2014':r.ball+'%';}],
+    ['\u21b3 Shot share','\u2265 ball wins',function(r,full){
+      if(r.ss===null)return '\u2014';
+      var lit=(full&&r.ball!==null)?htLight(r.ss>=r.ball,r.ss>=r.ball-5)+' ':'';
+      return lit+r.ss+'%';}],
+    ['Shots (us v them)','\u2014',function(r){return r.su+' v '+r.st;}],
+
+    ['GRP','Shots \u2192 scores',null],
+    ['Conversion \u2014 us','\u2014',function(r){return htFmt(r.conv);}],
+    ['Conversion \u2014 them','\u2014',function(r){return htFmt(r.convt);}],
+    ['Shooting play (us v them)','\u2014',function(r){return shoot(r.play)+' '+r.pp+'/'+r.pps+' v '+shoot(r.tplay)+' '+r.tpp+'/'+r.tpps;}],
+
+    ['GRP','Goals',null],
+    ['Goals against','\u22641 half / \u22642 full',function(r,full){return gaLight(r.ga,full)+' '+r.ga;}],
+    ['Goal chances (us v them)','\u2014',function(r){return htLight(r.gct<=r.gc,r.gct<=r.gc+1)+' '+r.gc+' v '+r.gct;}],
+
+    ['GRP','Discipline',null],
+    ['Pts conceded from frees','\u2014',function(r){var t=r.tfp+r.tmf;return htLight(r.tfp<=1,r.tfp<=2)+' '+r.tfp+' from '+t+' ('+r.fl+' conceded)';}],
+    ['Frees (won \u2212 lost)','0+',function(r){var n=r.fw-r.fl;return htLight(n>1,n>=-1)+' '+(n>0?'+':'')+n+' ('+r.fw+'W '+r.fl+'L)';}],
+    ['Pts scored from frees','\u2014',function(r){var t=r.ufp+r.umf;return r.ufp+' from '+t+' ('+r.fw+' won)';}]
+  ];
+  var h='<table class="rt"><thead><tr><th>Reading</th><th>Target</th>';
+  cols.forEach(function(c){h+='<th>'+esc(c[0])+'</th>';});
+  h+='</tr></thead><tbody>';
+  rows.forEach(function(r){
+    if(r[0]==='SEP'){h+='<tr class="sp"><td colspan="'+(2+cols.length)+'"></td></tr>';return;}
+    if(r[0]==='GRP'){h+='<tr class="gh"><td colspan="'+(2+cols.length)+'">'+esc(r[1])+'</td></tr>';return;}
+    h+='<tr><td>'+esc(r[0])+'</td><td class="tg">'+esc(r[1])+'</td>';
+    cols.forEach(function(c){h+='<td class="vv">'+r[2](c[1],c[0].indexOf('Full')===0)+'</td>';});
+    h+='</tr>';
+  });
+  h+='</tbody></table>';
+  document.getElementById('stats-content').innerHTML=h;
+}
+function htPc(w,l){return (w+l)?Math.round(100*w/(w+l)):null;}
+function htFmt(v){return v===null?'\u2014':v+'%';}
+function htLight(ok,near){return ok?'\u{1F7E2}':(near?'\u{1F7E1}':'\u{1F534}');}
+function htReadings(qs){
+  var c=function(k){return cntQ(k,qs);};
+  var olw=c('Our PO \u2013 We Win \u2013 Long'),oll=c('Our PO \u2013 We Lose \u2013 Long');
+  var ows=c('Our PO \u2013 We Win \u2013 Short'),ols=c('Our PO \u2013 We Lose \u2013 Short');
+  var tlw=c('Their PO \u2013 We Win \u2013 Long'),tll=c('Their PO \u2013 We Lose \u2013 Long');
+  var tws=c('Their PO \u2013 We Win \u2013 Short'),tls=c('Their PO \u2013 We Lose \u2013 Short');
+  var Z=['Attack','Mid','Def'];
+  var cw=0,cl=0,zone={};
+  Z.forEach(function(z){var w=c(z+' \u2013 Contested Win'),l=c(z+' \u2013 Contested Loss');cw+=w;cl+=l;zone[z]=[w,l];});
+  var fw=c('Free Won'),fl=c('Free Lost');
+  var bw=cw+olw+ows+tlw+tws,bl=cl+oll+ols+tll+tls;
+  /* No ball events logged -> nothing measured. Return null, never a constant.
+     (This used to fall back to 52, the pivot of the retired Cashing-In formula,
+      which also happened to be the green threshold - so an empty match read green.) */
+  var ball=(bw+bl)?100*bw/(bw+bl):null;
+  var su=c('Point \u2013 Play (Us)')+c('Miss \u2013 Play (Us)')+c('Point \u2013 Free (Us)')+c('Miss \u2013 Free (Us)')+c('Goal \u2013 Us')+c('Goal Chance \u2013 Us');
+  var st=c('Point \u2013 Play (Them)')+c('Miss \u2013 Play (Them)')+c('Point \u2013 Free (Them)')+c('Miss \u2013 Free (Them)')+c('Goal \u2013 Them')+c('Goal Chance \u2013 Them');
+  var ss=(su+st)?100*su/(su+st):null;
+  var pp=c('Point \u2013 Play (Us)'),mp=c('Miss \u2013 Play (Us)');
+  var tpp=c('Point \u2013 Play (Them)'),tmp=c('Miss \u2013 Play (Them)');
+  var gu=c('Goal \u2013 Us'),gt=c('Goal \u2013 Them');
+  var ufp=c('Point \u2013 Free (Us)'),umf=c('Miss \u2013 Free (Us)');
+  var tfp=c('Point \u2013 Free (Them)'),tmf=c('Miss \u2013 Free (Them)');
+  var upts=pp+ufp;
+  var tpts=tpp+tfp;
+  var conv=su?Math.round(100*(gu+upts)/su):null;
+  var convt=st?Math.round(100*(gt+tpts)/st):null;
+  var pad=function(n){return (n<10?'0':'')+n;};
+  var sl=gu+'-'+pad(upts)+' v '+gt+'-'+pad(tpts);
+  var pfu=gu*3+upts,pft=gt*3+tpts;
+  var marg=pfu-pft;
+  var scs=(pfu+pft)?Math.round(100*pfu/(pfu+pft)):null;
+  return {olw:olw,oll:oll,po:htPc(olw,oll),cw:cw,cl:cl,cb:htPc(cw,cl),
+          tlw:tlw,tll:tll,steal:htPc(tlw,tll),fw:fw,fl:fl,ga:gt,
+          zone:zone,play:htPc(pp,mp),pp:pp,pps:pp+mp,tplay:htPc(tpp,tmp),tpp:tpp,tpps:tpp+tmp,
+          ufp:ufp,umf:umf,tfp:tfp,tmf:tmf,sl:sl,marg:marg,scs:scs,pfu:pfu,pft:pft,
+          gu:gu,upts:upts,gt:gt,tpts:tpts,gc:c('Goal Chance \u2013 Us'),gct:c('Goal Chance \u2013 Them'),conv:conv,convt:convt,
+          ball:(ball===null?null:Math.round(ball)),ss:(ss===null?null:Math.round(ss)),
+          /* audit + season trend only - never displayed (event-usage-doc §4) */
+          gap:((ball===null||ss===null)?null:Math.round(ss-ball)),su:su,st:st};
+}
+
+/* ── CSV Export ── */
+function doCSV(){
+  if(!eventLog.length){toast('No events logged yet');return;}
+  try{
+    var lines=[
+      'Match Metadata','Opposition,'+csvSafe(meta.opposition),'Competition,'+csvSafe(meta.competition),
+      'Venue,'+csvSafe(meta.venue),'Date,'+csvSafe(meta.date),
+      '','Event Log','Event,Quarter,MatchTime,Timestamp_ms,Zone,Qualifier'
+    ];
+    for(var i=0;i<eventLog.length;i++){
+      var e=eventLog[i];
+      lines.push('"'+csvSafe(e.kpi)+'",'+e.quarter+',"'+csvSafe(e.time)+'",'+e.ts+','+(e.zone?csvSafe(e.zone):'')+','+(e.qual?csvSafe(e.qual):''));
+    }
+    lines.push('','KPI Summary','KPI,Q1,Q2,Q3,Q4,Total');
+    for(var ki=0;ki<KPIS.length;ki++){
+      var k=KPIS[ki];
+      var q=[cntQ(k,[1]),cntQ(k,[2]),cntQ(k,[3]),cntQ(k,[4])];
+      lines.push('"'+csvSafe(k)+'",'+q.join(',')+','+(q[0]+q[1]+q[2]+q[3]));
+    }
+    var csvStr=lines.join('\n');
+    var fn='gaa_'+csvSafe(meta.opposition||'match').replace(/[\s,'"]+/g,'_')+'_'+csvSafe(meta.date||new Date().toISOString().slice(0,10)).replace(/[\s,'"]+/g,'_')+'.csv';
+    if(window.navigator&&window.navigator.share&&window.navigator.canShare){
+      try{var file=new File([csvStr],fn,{type:'text/csv'});if(navigator.canShare({files:[file]})){navigator.share({files:[file],title:'GAA Stats'}).catch(function(){fallbackCSV(csvStr,fn);});return;}}catch(e){}
+    }
+    fallbackCSV(csvStr,fn);
+  }catch(e){toast('CSV export failed');}
+}
+function fallbackCSV(csvStr,fn){
+  try{
+    var blob=new Blob([csvStr],{type:'text/csv;charset=utf-8;'});
+    var url=URL.createObjectURL(blob);var a=document.createElement('a');
+    a.href=url;a.download=fn;a.style.display='none';
+    document.body.appendChild(a);a.click();
+    setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);toast('CSV downloaded');},300);
+  }catch(e){toast('CSV export failed');}
+}
+
+function toast(msg){
+  try{var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(function(){el.classList.remove('show');},2400);}catch(e){}
+}
+
+init();
 </script>
 </body>
 </html>
