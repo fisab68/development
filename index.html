@@ -934,10 +934,19 @@ function hideQual(){document.getElementById('qstrip').classList.remove('show');}
 function showNudge(t){document.getElementById('nudge-txt').textContent=t;document.getElementById('nudge').classList.add('show');}
 function hideNudge(){document.getElementById('nudge').classList.remove('show');}
 
+function validQuals(k){
+  if(!isShotKpi(k))return [];
+  var v=[];
+  if(isFreeShot(k))v.push('65');
+  if(isMissKpi(k))v=v.concat(['Short','Saved','Blocked']);
+  return v;
+}
 function applyQual(q){
   if(!eventLog.length)return;
   var last=eventLog[eventLog.length-1];
-  if(!isShotKpi(last.kpi))return;
+  /* A qualifier must be legal for the event it lands on: a score can never be
+     'Short', and only a placed ball can be a 65. Guards against a stale strip. */
+  if(validQuals(last.kpi).indexOf(q)===-1){hideQual();return;}
   last.qual=q;
   lsSet(SK,JSON.stringify(eventLog));
   try{if(navigator.vibrate)navigator.vibrate(14);}catch(ex){}
